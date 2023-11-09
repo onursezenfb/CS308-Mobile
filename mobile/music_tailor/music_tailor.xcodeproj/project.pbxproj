@@ -15,6 +15,7 @@
 		AB88A09A2AF3BC1300160AD2 /* music_tailorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB88A0992AF3BC1300160AD2 /* music_tailorUITests.swift */; };
 		AB88A09C2AF3BC1300160AD2 /* music_tailorUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB88A09B2AF3BC1300160AD2 /* music_tailorUITestsLaunchTests.swift */; };
 		AB88A0A92AF3BC4B00160AD2 /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB88A0A82AF3BC4B00160AD2 /* SignUpView.swift */; };
+		ABE43CAA2AFCD84C00B53FD5 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABE43CA92AFCD84C00B53FD5 /* ContentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,6 +47,7 @@
 		AB88A0992AF3BC1300160AD2 /* music_tailorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = music_tailorUITests.swift; sourceTree = "<group>"; };
 		AB88A09B2AF3BC1300160AD2 /* music_tailorUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = music_tailorUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		AB88A0A82AF3BC4B00160AD2 /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
+		ABE43CA92AFCD84C00B53FD5 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,6 +103,7 @@
 				AB88A0822AF3BC1200160AD2 /* Assets.xcassets */,
 				AB88A0842AF3BC1200160AD2 /* Preview Content */,
 				AB88A0A82AF3BC4B00160AD2 /* SignUpView.swift */,
+				ABE43CA92AFCD84C00B53FD5 /* ContentView.swift */,
 			);
 			path = music_tailor;
 			sourceTree = "<group>";
@@ -261,6 +264,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9351CF432AF4CF440098CD8F /* music_tailorApp.swift in Sources */,
+				ABE43CAA2AFCD84C00B53FD5 /* ContentView.swift in Sources */,
 				AB88A0812AF3BC1000160AD2 /* LoginView.swift in Sources */,
 				AB88A0A92AF3BC4B00160AD2 /* SignUpView.swift in Sources */,
 			);
