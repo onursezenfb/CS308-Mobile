@@ -11,7 +11,7 @@ import SwiftUI
 struct music_tailorApp: App {
     var body: some Scene {
         WindowGroup {
-            SignUpView()
+            SignUpView(email: "")
         }
     }
 }
