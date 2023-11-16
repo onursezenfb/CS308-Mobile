@@ -3,40 +3,45 @@ import SwiftUI
 struct ContentView: View {
     @State private var selectedTab: Int = 0
     var username: String
+    var email: String
+    var name: String
+    var surname: String
+    var password: String
+
 
     var body: some View {
         NavigationView {
             VStack {
                 TabView(selection: $selectedTab) {
-                    HomeView(username: username)
+                    HomeView(username: username, email: email, name: name, surname: surname, password: password)
                         .tabItem {
                             Image(systemName: "house")
                             Text("Home")
                         }
                         .tag(0)
                     
-                    UploadMusicFormView(username: username)
+                    UploadMusicFormView(username: username, email: email, name: name, surname: surname, password: password)
                         .tabItem {
                             Image(systemName: "square.and.arrow.up")
                             Text("Upload Music")
                         }
                         .tag(1)
                     
-                    PlaylistsView(username: username)
+                    PlaylistsView(username: username, email: email, name: name, surname: surname, password: password)
                         .tabItem {
                             Image(systemName: "music.note.list")
                             Text("Your Playlists")
                         }
                         .tag(2)
                     
-                    FriendsView(username: username)
+                    FriendsView(username: username, email: email, name: name, surname: surname, password: password)
                         .tabItem {
                             Image(systemName: "person.2")
                             Text("Friends")
                         }
                         .tag(3)
                     
-                    ProfileView(username: username)
+                    ProfileView(username: username, email: email, name: name, surname: surname, password: password)
                         .tabItem {
                             Image(systemName: "person.circle")
                             Text("Profile")
@@ -53,6 +58,10 @@ struct ContentView: View {
 
 struct HomeView: View {
     var username: String
+    var email: String
+    var name: String
+    var surname: String
+    var password: String
     @State private var searchText: String = ""
 
     var body: some View {
@@ -74,7 +83,7 @@ struct HomeView: View {
                 }
                 
                 Spacer()
-                Text("Hello, \(username)!")
+                Text("Hello, \(name)!")
                     .font(.largeTitle)
                     .padding()
                 Spacer()
@@ -91,6 +100,10 @@ struct HomeView: View {
 
 struct UploadMusicFormView: View {
     var username: String
+    var email: String
+    var name: String
+    var surname: String
+    var password: String    
     @State private var songName: String = ""
     @State private var publicationDate: String = "" // for publ_date
     @State private var performers: String = "" // for performers (stored as JSON)
@@ -181,7 +194,10 @@ struct UploadMusicFormView: View {
 
 struct PlaylistsView: View {
     var username: String
-
+    var email: String
+    var name: String
+    var surname: String
+    var password: String
     var body: some View {
         // PlaylistsView implementation
         Text("Your Playlists Content")
@@ -190,7 +206,10 @@ struct PlaylistsView: View {
 
 struct FriendsView: View {
     var username: String
-
+    var email: String
+    var name: String
+    var surname: String
+    var password: String
     var body: some View {
         // FriendsView implementation
         Text("Friends Content")
@@ -199,15 +218,49 @@ struct FriendsView: View {
 
 struct ProfileView: View {
     var username: String
-
+    var email: String
+    var name: String
+    var surname: String
+    var password: String
     var body: some View {
-        // ProfileView implementation
-        Text("Profile Content")
-    }
+            VStack {
+                Image(systemName: "person")
+                    .padding(.top, 50)
+                    .font(.system(size: 120))
+                    .foregroundColor(.gray) // Replace "profile_image" with the name of your profile image asset
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 120, height: 120)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                    .shadow(radius: 7)
+                    .padding(.top, 30)
+
+                Text(name + " " + surname)
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .padding(.top, 10)
+                    .padding(.bottom, 1)
+
+                Text("@" + username)
+                    .foregroundColor(.gray)
+
+                Divider()
+                    .padding(.vertical, 20)
+
+                Text("Bio: This is a brief description about yourself. You can customize it based on your preferences.")
+                    .padding(.horizontal, 20)
+                    .multilineTextAlignment(.center)
+
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .navigationBarTitle("Profile", displayMode: .inline)
+        }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(username: "Ozan")
+        ContentView(username: "ozaancelebi", email: "ozancelebi26@gmail.com", name: "Ozan", surname: "Çelebi", password: "Ozan1234.")
+     //   ProfileView(username: "ozaancelebi", email: "ozancelebi26@gmail.com", name: "Ozan", surname: "Çelebi", password: "Ozan1234.")
     }
 }
