@@ -11,7 +11,9 @@ struct ContentView: View {
 
     var body: some View {
         NavigationView {
+            
             VStack {
+                
                 TabView(selection: $selectedTab) {
                     HomeView(username: username, email: email, name: name, surname: surname, password: password)
                         .tabItem {
@@ -222,19 +224,83 @@ struct ProfileView: View {
     var name: String
     var surname: String
     var password: String
+    @State private var profileImage: UIImage? = nil
+    @State private var selectedImage: UIImage? // Add this line
+    @State private var showingSettings = false // Added state for showing settings
+    
     var body: some View {
+        NavigationView {
             VStack {
-                Image(systemName: "person")
-                    .padding(.top, 50)
-                    .font(.system(size: 120))
-                    .foregroundColor(.gray) // Replace "profile_image" with the name of your profile image asset
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 120, height: 120)
-                    .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.white, lineWidth: 4))
-                    .shadow(radius: 7)
-                    .padding(.top, 30)
+                VStack(spacing: 0) { // Set spacing to 0 to remove the space between text elements
+                    HStack {
+                        Text("Your Personal")
+                            .font(.custom("Arial-BoldMT", size: 30))
+                            .fontWeight(.bold)
+                            .foregroundColor(.black)
+                            .padding(.leading, 20)
+                        Spacer()
 
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 10)
+                                .foregroundColor(Color.pink.opacity(0.7))
+                                .frame(width: 40, height: 40)
+                            Button(action: {
+                                showingSettings.toggle()
+                            }) {
+                                Image(systemName: "gear")
+                                    .font(.title)
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .padding(.trailing, 20)
+                        .sheet(isPresented: $showingSettings) {
+                            SettingsView(profileImage: $profileImage) // Show the settings view when the button is tapped
+                        }
+                    }
+
+                    VStack {
+                        HStack {
+                            Text("Music Tailor")
+                                .font(Font.system(size: 32, design: .rounded))
+                                .bold()
+                                .foregroundColor(.pink)
+                                .padding(.leading, 20)
+                            VStack {
+                                Text("Profile")
+                                    .font(.custom("Arial-BoldMT", size: 30))
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.black)
+                            }
+                            Spacer()
+                        }
+                    }
+                }
+                .background(Color.pink.opacity(0.15))
+
+
+
+                
+               
+                if let image = selectedImage ?? profileImage {
+                   Image(uiImage: image)
+                       .resizable()
+                       .frame(width: 120, height: 120)
+                       .clipShape(Circle())
+                       .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                       .shadow(radius: 7)
+               } else {
+                   Image(systemName: "person")
+                       .padding(.top, 50)
+                       .font(.system(size: 120))
+                       .foregroundColor(Color.pink.opacity(0.15))
+                       .aspectRatio(contentMode: .fill)
+                       .frame(width: 120, height: 120)
+                       .clipShape(Circle())
+                       .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                       .shadow(radius: 7)
+                       .padding(.top, 30)
+               }
+                
                 Text(name + " " + surname)
                     .font(.title)
                     .fontWeight(.bold)
@@ -245,18 +311,203 @@ struct ProfileView: View {
                     .foregroundColor(.gray)
 
                 Divider()
+                    .background(Color.pink.opacity(0.15)) // Set background color of the part divided by the divider to pink
                     .padding(.vertical, 20)
 
-                Text("Bio: This is a brief description about yourself. You can customize it based on your preferences.")
+                Text("This is a brief description about yourself. You can customize it based on your preferences.")
+                    .font(.custom("Avenir Next", size: 18))
+                    .italic()
                     .padding(.horizontal, 20)
                     .multilineTextAlignment(.center)
 
+
                 Spacer()
             }
-            .padding(.horizontal, 20)
-            .navigationBarTitle("Profile", displayMode: .inline)
         }
+        .navigationBarTitle(Text(""), displayMode: .inline) // Add this line to hide the default navigation title
+    }
 }
+
+struct SettingsView: View {
+    @State private var navigateToLogin = false
+    @State private var showingImagePicker = false
+    @Binding var profileImage: UIImage? //
+
+
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                        // Pink ombre circles in each corner
+                        Circle()
+                            .fill(PinkGradient)
+                            .frame(width: 300, height: 300)
+                            .position(x: 0, y: 0) // Top left corner
+
+                        Circle()
+                            .fill(PinkGradient)
+                            .frame(width: 300, height: 300)
+                            .position(x: UIScreen.main.bounds.width, y: 0) // Top right corner
+
+                        Circle()
+                            .fill(PinkGradient)
+                            .frame(width: 300, height: 300)
+                            .position(x: 0, y: UIScreen.main.bounds.height) // Bottom left corner
+
+                        Circle()
+                            .fill(PinkGradient)
+                            .frame(width: 300, height: 300)
+                            .position(x: UIScreen.main.bounds.width, y: UIScreen.main.bounds.height) // Bottom right corner
+                        // Content of your view
+
+            VStack(spacing: 20) {
+                VStack(alignment: .center, spacing: 0) {
+                    Spacer().frame(height: 125)
+                    HStack{
+                        Text("Tailor")
+                        .font(Font.system(size: 36, design: .rounded))
+                        .bold()
+                        .foregroundColor(.pink)
+                        Text("Your")
+                        .font(.largeTitle)
+                        .bold()
+                        .foregroundColor(.black)
+                    }
+                    HStack{
+                        Spacer()
+                        Text("Experience")
+                        .font(.largeTitle)
+                        .bold()
+                        .foregroundColor(.black)
+                        Spacer()
+
+                    }
+                    
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding()
+
+                Button(action: {
+                        // Show the image picker when the button is pressed
+                        showingImagePicker.toggle()
+                    }) {
+                        Text("Change Profile Picture")
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.pink)
+                            .cornerRadius(10)
+                    }
+                    .padding(.top, 20)
+                    .sheet(isPresented: $showingImagePicker) {
+                        ImagePicker(image: $profileImage) // Change this line
+                    }
+
+                
+                Button("Change Theme") {
+                    // Action for Change Theme
+                }
+                .buttonStyle(SettingsButtonStyle())
+
+                Button("Limit Your Activity") {
+                    // Action for Limit Your Activity
+                }
+
+                .buttonStyle(SettingsButtonStyle())
+                
+                
+                NavigationLink(
+                    destination: LoginView()
+                        .navigationBarBackButtonHidden(true)
+                        .navigationBarHidden(true),
+                    isActive: $navigateToLogin
+                ) {
+                    EmptyView()
+                }
+                .hidden() // Use .hidden() instead of opacity and background
+
+                Button(action: {
+                    // Set the flag to true to trigger the navigation
+                    navigateToLogin = true
+                }) {
+                    Text("Log Out")
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color.pink)
+                        .cornerRadius(10)
+                }
+                .padding(.top, 20)
+               
+
+                Spacer()
+            }
+            .background(.pink.opacity(0.1))
+        }
+        
+    }
+    .navigationBarTitle(Text(""), displayMode: .inline) // Add this line to hide the default navigation title
+
+    var PinkGradient: LinearGradient {
+            LinearGradient(gradient: Gradient(colors: [Color.pink, Color.pink.opacity(0)]), startPoint: .topLeading, endPoint: .bottomTrailing)
+        }
+    }
+}
+struct SettingsButtonStyle: ButtonStyle {
+
+    func makeBody(configuration: Self.Configuration) -> some View {
+
+        configuration.label
+
+            .foregroundColor(.white)
+
+            .padding()
+
+            .background(Color.pink)
+
+            .cornerRadius(8)
+
+            .frame(maxWidth: .infinity)
+
+            .padding(.horizontal)
+
+    }
+
+}
+struct ImagePicker: UIViewControllerRepresentable {
+
+        @Binding var image: UIImage?
+
+        func makeUIViewController(context: Context) -> UIImagePickerController {
+            let picker = UIImagePickerController()
+            picker.delegate = context.coordinator
+            return picker
+        }
+
+        func makeCoordinator() -> Coordinator {
+            Coordinator(self)
+        }
+
+        class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
+            let parent: ImagePicker
+
+            init(_ parent: ImagePicker) {
+                self.parent = parent
+            }
+
+
+
+            func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+                if let uiImage = info[.originalImage] as? UIImage {
+                    parent.image = uiImage
+                }
+
+                picker.dismiss(animated: true)
+            }
+        }
+
+        func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+    }
+
+
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {

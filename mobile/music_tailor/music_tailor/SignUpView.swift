@@ -48,6 +48,7 @@ struct SignUpView: View {
                                 .cornerRadius(8)
                                 .frame(maxWidth: .infinity)
                                 .autocapitalization(.none)
+                                .disableAutocorrection(true)
 
                         }
                         .frame(width: 300, height: 60)
@@ -86,7 +87,7 @@ struct SignUpView: View {
                         Text("Already have an account?")
                             .foregroundColor(.black)
                         NavigationLink(destination: LoginView().navigationBarBackButtonHidden(true)) {
-                            Text("Login")
+                            Text("log in")
                                 .foregroundColor(.pink)
                                 .bold()
                         }
@@ -183,6 +184,7 @@ struct PasswordView: View {
                         HStack {
                             if isPasswordVisible {
                                 TextField("Enter your password", text: $password)
+                                    .disableAutocorrection(true)
                             } else {
                                 SecureField("Enter your password", text: $password)
                             }
@@ -461,6 +463,7 @@ struct UsernameView: View {
                             .cornerRadius(8)
                             .frame(maxWidth: .infinity)
                             .autocapitalization(.none)
+                            .disableAutocorrection(true)
                         
                     }
                     .frame(width: 300, height: 60)
@@ -486,6 +489,7 @@ struct UsernameView: View {
                             .cornerRadius(8)
                             .frame(maxWidth: .infinity)
                             .autocapitalization(.none)
+                            .disableAutocorrection(true)
                         
                     }
                     .frame(width: 300, height: 60)
@@ -510,6 +514,7 @@ struct UsernameView: View {
                             .cornerRadius(8)
                             .frame(maxWidth: .infinity)
                             .autocapitalization(.none)
+                            .disableAutocorrection(true)
                         
                     }
                     .frame(width: 300, height: 60)
@@ -568,29 +573,65 @@ struct UsernameView: View {
     }
     
     func checkFields() {
-            if username.count >= 3 && !name.isEmpty && !surname.isEmpty {
-                // All fields are valid
-                isEverythingValid = true
-                usernameError = nil
-                
-                //add to database
+        if username.count >= 3 && !name.isEmpty && !surname.isEmpty {
+            // All fields are valid
+            isEverythingValid = true
+            usernameError = nil
+
+            // Check if the username is available
+            checkUsernameAvailability()
+        } else {
+            // Set an error message based on the specific condition not met
+            if name.isEmpty || surname.isEmpty || username.isEmpty {
+                usernameError = "All fields must be filled."
             } else {
-                // Set an error message based on the specific condition not met
-                if name.isEmpty || surname.isEmpty || username.isEmpty {
-                    usernameError = "All fields must be filled."
+                usernameError = "Username must be at least 3 characters."
+            }
+            isEverythingValid = false
+        }
+    }
+
+    func checkUsernameAvailability() {
+        // Replace with your API endpoint URL for checking username availability
+        guard let url = URL(string: "http://127.0.0.1:8000/api/users/\(username)") else {
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Error: \(error)")
+            } else if let data = data {
+                // Parse and handle the data as needed
+                do {
+                    let decodedData = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                    
+                    // Check the response to determine if the username is available
+                    if let isAvailable = decodedData?["isAvailable"] as? Bool {
+                        if isAvailable {
+                            print("Username is available.")
+                            // Proceed with registration logic here
+                        } else {
+                            print("This username is already taken.")
+                            // Handle the case where the username is not available
+                        }
+                    } else {
+                        print("Invalid response format.")
+                    }
+                } catch {
+                    print("Error decoding data: \(error)")
                 }
-                else {
-                    usernameError = "Username must be at least 3 characters."
-                }
-                isEverythingValid = false
             }
         }
+        .resume()
+    }
+
+
 }
 
 
 #Preview {
     SignUpView(email: "")
  //   PasswordView(email: .constant("ozancelebi@gmail.com"))
-//    UsernameView(email: .constant("ozancelebi@gmail.com"), password: "Ozan1234.")
+  //  UsernameView(email: .constant("ozancelebi@gmail.com"), password: "Ozan1234.")
 
 }
