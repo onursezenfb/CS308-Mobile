@@ -101,6 +101,16 @@ struct HomeView: View {
 
 
 struct UploadMusicFormView: View {
+    
+    /*
+     
+     spotify linki
+     
+     
+     */
+    
+    
+    
     var username: String
     var email: String
     var name: String

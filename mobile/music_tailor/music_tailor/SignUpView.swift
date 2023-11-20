@@ -630,8 +630,8 @@ struct UsernameView: View {
 
 
 #Preview {
-    SignUpView(email: "")
+  //  SignUpView(email: "")
  //   PasswordView(email: .constant("ozancelebi@gmail.com"))
-  //  UsernameView(email: .constant("ozancelebi@gmail.com"), password: "Ozan1234.")
+    UsernameView(email: .constant("ozancelebi@gmail.com"), password: "Ozan1234.")
 
 }
