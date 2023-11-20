@@ -57,7 +57,6 @@ struct ContentView: View {
 }
 
 
-
 struct HomeView: View {
     var username: String
     var email: String
@@ -65,9 +64,21 @@ struct HomeView: View {
     var surname: String
     var password: String
     @State private var searchText: String = ""
+    @State private var currentFilter: Filter = .all // Default filter is "All"
+
+    @State private var albums: [Album] = []
+    @State private var songs: [Song] = []
+    @State private var performers: [Performer] = []
+
+    enum Filter: String, CaseIterable {
+        case all = "All"
+        case songs = "Songs"
+        case albums = "Albums"
+        case performers = "Performers"
+    }
 
     var body: some View {
-        ZStack{
+        ZStack {
             Color.white
                 .ignoresSafeArea()
             VStack(alignment: .leading, spacing: 16) {
@@ -76,26 +87,208 @@ struct HomeView: View {
                         .padding(.leading, 8)
                         .foregroundColor(.gray)
                     TextField("Search", text: $searchText)
-                        .padding(.leading, 30) // Adjust the padding to move the text inside the text field
+                        .padding(.leading, 30)
                         .padding(8)
                         .background(Color.gray.opacity(0.2))
                         .cornerRadius(8)
                         .frame(maxWidth: .infinity)
-
+                        .onChange(of: searchText, perform: { _ in
+                            fetchSearchResults()
+                        })
                 }
-                
-                Spacer()
-                Text("Hello, \(name)!")
-                    .font(.largeTitle)
-                    .padding()
-                Spacer()
-                Spacer()
+
+
+
+                // Filter buttons
+                HStack {
+                    ForEach(Filter.allCases, id: \.self) { filter in
+                        Button(action: {
+                            currentFilter = filter
+                            fetchSearchResults()
+                        }) {
+                            Text(filter.rawValue)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(currentFilter == filter ? Color.pink : Color.gray.opacity(0.5))
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                        }
+                    }
+                }
+
+                // Display filtered results based on the current filter
+                List {
+                    ForEach(filteredItems(), id: \.id) { item in
+                        HStack {
+                            AsyncImage(url: URL(string: item.imageUrl)) { image in
+                                image
+                                    .resizable()
+                                    .frame(width: 50, height: 50) // Adjust the image size as needed
+                            } placeholder: {
+                                ProgressView()
+                            }
+                            .cornerRadius(8) // Add corner radius to the image
+                            
+                            Spacer().frame(width: 15)
+                            VStack(alignment: .leading) {
+                                Text(item.name)
+                                Text("\(item.identifier)")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                            }
+                            
+                        }
+                    }
+                }
             }
             .padding()
             .background(Color.white.opacity(0.8))
             .cornerRadius(0)
         }
+        .onAppear {
+            fetchSearchResults()
+        }
     }
+
+    private func fetchSearchResults() {
+        // Define the API endpoint URLs based on the current filter and searchText
+        var endpointURL: URL
+        switch currentFilter {
+        case .songs:
+            endpointURL = URL(string: "http://127.0.0.1:8000/api/songs/name/\(searchText)")!
+        case .albums:
+            endpointURL = URL(string: "http://127.0.0.1:8000/api/albums/name/\(searchText)")!
+        case .performers:
+            endpointURL = URL(string: "http://127.0.0.1:8000/api/performers/name/\(searchText)")!
+        case .all:
+            // Handle the case when "All" is selected
+            return
+        }
+
+        // Create URLSession tasks for the current filter
+        let task = URLSession.shared.dataTask(with: endpointURL) { data, response, error in
+            if let data = data {
+                switch currentFilter {
+                case .songs:
+                    do {
+                        let response = try JSONDecoder().decode(Response<Song>.self, from: data)
+                        songs = response.data
+                    } catch {
+                        print("Error decoding songs JSON: \(error)")
+                    }
+                case .albums:
+                    do {
+                        let response = try JSONDecoder().decode(Response<Album>.self, from: data)
+                        albums = response.data
+                    } catch {
+                        print("Error decoding albums JSON: \(error)")
+                    }
+                case .performers:
+                    do {
+                        let response = try JSONDecoder().decode(Response<Performer>.self, from: data)
+                        performers = response.data
+                    } catch {
+                        print("Error decoding performers JSON: \(error)")
+                    }
+                case .all:
+                    break
+                }
+            }
+        }
+
+        // Start URLSession task
+        task.resume()
+    }
+    
+    private func filteredItems() -> [FilterItem] {
+        var items: [FilterItem] = []
+
+        switch currentFilter {
+        case .songs:
+            items = songs.compactMap { song in
+                if let album = albums.first(where: { $0.album_id == song.album_id }),
+                   let performer = performers.first(where: { $0.artist_id == album.artist_id }) {
+                    return FilterItem(id: song.song_id, name: song.name, identifier: "Song - \(performer.name)", imageUrl: album.image_url)
+                }
+                return nil
+            }
+        case .albums:
+            items = albums.map { album in
+                if let performer = performers.first(where: { $0.artist_id == album.artist_id }) {
+                    return FilterItem(id: album.album_id, name: album.name, identifier: "Album - \(performer.name)", imageUrl: album.image_url)
+                }
+                return FilterItem(id: album.album_id, name: album.name, identifier: "Album", imageUrl: album.image_url)
+            }
+        case .performers:
+            items = performers.map { performer in
+                FilterItem(id: performer.artist_id, name: performer.name, identifier: "Performer", imageUrl: performer.image_url)
+            }
+        case .all:
+            break
+        }
+
+        return items
+    }
+
+
+
+}
+
+
+struct FilterItem: Identifiable {
+    var id: String
+    var name: String
+    var identifier: String
+    var imageUrl: String
+    var performerName: String? // Optional, to store the performer's name
+
+    init(id: String, name: String, identifier: String, imageUrl: String, performerName: String? = nil) {
+        self.id = id
+        self.name = name
+        self.identifier = identifier
+        self.imageUrl = imageUrl
+        self.performerName = performerName
+    }
+}
+
+
+
+struct Album: Identifiable, Decodable {
+    var album_id: String
+    var name: String
+    var image_url: String
+    var artist_id: String
+    // Add other album properties as needed
+    
+    // Conform to Identifiable by providing a unique identifier
+    var id: String { album_id }
+}
+
+struct Song: Identifiable, Decodable {
+    var song_id: String
+    var name: String
+    var album_id: String
+    
+    // Add image_url property
+    // Add other song properties as needed
+    
+    // Conform to Identifiable by providing a unique identifier
+    var id: String { song_id }
+}
+
+struct Performer: Identifiable, Decodable {
+    var artist_id: String
+    var name: String
+    var image_url: String // Add image_url property
+    // Add other performer properties as needed
+    
+    // Conform to Identifiable by providing a unique identifier
+    var id: String { artist_id }
+}
+
+
+struct Response<T: Decodable>: Decodable {
+    var data: [T]
 }
 
 
