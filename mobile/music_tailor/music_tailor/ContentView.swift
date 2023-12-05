@@ -537,7 +537,8 @@ struct ContentView: View {
     
     struct PlaylistsView: View {
        
-        
+        @State private var showRecommendations = false
+        @State private var showRecommendations2 = false
         var body: some View {
             VStack(spacing: 10) {
                 HStack {
@@ -553,15 +554,25 @@ struct ContentView: View {
                 }
                 
                 Button(action: {
-                    // Action for "Recommendations" button
-                }) {
-                    Text("Recommendations")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color.pink)
-                        .cornerRadius(10)
-                }
+                               showRecommendations = true
+                           }) {
+                               Text("Fav Genre Recommendations")
+                                   .font(.headline)
+                                   .foregroundColor(.white)
+                                   .padding()
+                                   .background(Color.pink)
+                                   .cornerRadius(10)
+                           }
+                Button(action: {
+                               showRecommendations2 = true
+                           }) {
+                               Text("Energic Recommendations")
+                                   .font(.headline)
+                                   .foregroundColor(.white)
+                                   .padding()
+                                   .background(Color.pink)
+                                   .cornerRadius(10)
+                           }
                 
                 Button(action: {
                     // Action for "Your Playlists" button
@@ -574,7 +585,12 @@ struct ContentView: View {
                         .cornerRadius(10)
                 }
                 
-                
+                NavigationLink(destination: RecommendationView(), isActive: $showRecommendations) {
+                                EmptyView()
+                            }.hidden()
+                NavigationLink(destination: EnergyDanceabilityRecommendationView(), isActive: $showRecommendations2) {
+                                EmptyView()
+                            }.hidden()
                 
                 Spacer()
             }
