@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		9351CF432AF4CF440098CD8F /* music_tailorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB88A07E2AF3BC1000160AD2 /* music_tailorApp.swift */; };
+		93BBA3142B1BAA540026F9A9 /* AddFriendView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93BBA3132B1BAA540026F9A9 /* AddFriendView.swift */; };
+		93CBA1E62B1E297F0062A920 /* ObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93CBA1E52B1E297F0062A920 /* ObservableObject.swift */; };
 		AB88A0812AF3BC1000160AD2 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB88A0802AF3BC1000160AD2 /* LoginView.swift */; };
 		AB88A0832AF3BC1200160AD2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB88A0822AF3BC1200160AD2 /* Assets.xcassets */; };
 		AB88A0862AF3BC1200160AD2 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB88A0852AF3BC1200160AD2 /* Preview Assets.xcassets */; };
@@ -36,6 +38,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		93BBA3132B1BAA540026F9A9 /* AddFriendView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFriendView.swift; sourceTree = "<group>"; };
+		93CBA1E52B1E297F0062A920 /* ObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableObject.swift; sourceTree = "<group>"; };
 		AB88A07B2AF3BC1000160AD2 /* music_tailor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = music_tailor.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB88A07E2AF3BC1000160AD2 /* music_tailorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = music_tailorApp.swift; sourceTree = "<group>"; };
 		AB88A0802AF3BC1000160AD2 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
@@ -104,6 +108,8 @@
 				AB88A0842AF3BC1200160AD2 /* Preview Content */,
 				AB88A0A82AF3BC4B00160AD2 /* SignUpView.swift */,
 				ABE43CA92AFCD84C00B53FD5 /* ContentView.swift */,
+				93BBA3132B1BAA540026F9A9 /* AddFriendView.swift */,
+				93CBA1E52B1E297F0062A920 /* ObservableObject.swift */,
 			);
 			path = music_tailor;
 			sourceTree = "<group>";
@@ -266,7 +272,9 @@
 				9351CF432AF4CF440098CD8F /* music_tailorApp.swift in Sources */,
 				ABE43CAA2AFCD84C00B53FD5 /* ContentView.swift in Sources */,
 				AB88A0812AF3BC1000160AD2 /* LoginView.swift in Sources */,
+				93BBA3142B1BAA540026F9A9 /* AddFriendView.swift in Sources */,
 				AB88A0A92AF3BC4B00160AD2 /* SignUpView.swift in Sources */,
+				93CBA1E62B1E297F0062A920 /* ObservableObject.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

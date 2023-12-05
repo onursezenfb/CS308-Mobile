@@ -1,6 +1,12 @@
 import SwiftUI
 
+
+
+
+
 struct LoginView: View {
+    
+    @EnvironmentObject var userSession: UserSession
     @State private var email = ""
     @State private var password = ""
     @State private var errorMessage: String? = nil
@@ -153,10 +159,11 @@ struct LoginView: View {
  
                     
                     
-                    NavigationLink(destination: ContentView(username: "ozaancelebi", email: email, name: "Ozan", surname: "Çelebi", password: password).navigationBarBackButtonHidden(true), isActive: $loggedIn)
+                    NavigationLink(destination: ContentView().navigationBarBackButtonHidden(true), isActive: $loggedIn)
+
                     {
-                                        EmptyView()
-                                    }
+                     EmptyView()
+                    }
                                     .opacity(0)
                                     .background(Color.clear)
                     
@@ -173,10 +180,6 @@ struct LoginView: View {
         let apiURL = "http://127.0.0.1:8000/api/users"
         guard let url = URL(string: apiURL) else { return }
 
-        let parameters: [String: String] = [
-            "email": email
-        ]
-
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -188,13 +191,15 @@ struct LoginView: View {
                         if let users = try JSONSerialization.jsonObject(with: data!, options: []) as? [[String: Any]] {
                             if let user = users.first(where: { ($0["email"] as? String) == email && ($0["language"] as? String) == password }) {
                                 // Login successful
-                                print("Login successful!")
                                 DispatchQueue.main.async {
+                                    self.userSession.username = user["username"] as? String
+                                    self.userSession.email = user["email"] as? String
+                                    self.userSession.name = user["name"] as? String
+                                    self.userSession.surname = user["surname"] as? String
                                     loggedIn = true
                                 }
                             } else {
                                 // Invalid email or language
-                                print("Invalid email or language.")
                                 DispatchQueue.main.async {
                                     wrongCredentials = true
                                     errorMessage = "Invalid email or language."
@@ -202,19 +207,24 @@ struct LoginView: View {
                             }
                         }
                     } catch {
-                        print("Error decoding JSON:", error)
+                        DispatchQueue.main.async {
+                            errorMessage = "Error decoding JSON: \(error)"
+                        }
                     }
                 } else {
                     // Login failed
-                    print("Error fetching users. Status code: \(httpResponse.statusCode)")
                     DispatchQueue.main.async {
-                        wrongCredentials = true
-                        errorMessage = "Error fetching users."
+                        errorMessage = "Login failed. Status code: \(httpResponse.statusCode)"
                     }
+                }
+            } else if let error = error {
+                DispatchQueue.main.async {
+                    errorMessage = "Network error: \(error.localizedDescription)"
                 }
             }
         }.resume()
     }
+
 
 }
     
@@ -225,6 +235,7 @@ struct LoginView: View {
 struct LoginView_Previews: PreviewProvider {
     static var previews: some View {
         LoginView()
+            .environmentObject(UserSession())
     }
 }
 
