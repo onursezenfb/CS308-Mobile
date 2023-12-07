@@ -88,17 +88,19 @@ struct ContentView: View {
                 VStack {
                     Text(ratingTitle)
                     // Display rating options (0 to 5)
-                    ForEach(0..<6) { rating in
-                            Button("\(rating)") {
-                                if let username = userSession.username {
-                                    submitRating(for: itemID, with: rating, username: username, itemType: itemType)
+                    HStack{
+                        ForEach(0..<6) { rating in
+                                Button("\(rating)") {
+                                    if let username = userSession.username {
+                                        submitRating(for: itemID, with: rating, username: username, itemType: itemType)
+                                    }
                                 }
-                            }
-                        .padding()  // Style as needed
-                    }
-                    if let errorMessage = errorMessage {
-                        Text(errorMessage)
-                            .foregroundColor(.red)
+                            .padding()  // Style as needed
+                        }
+                        if let errorMessage = errorMessage {
+                            Text(errorMessage)
+                                .foregroundColor(.red)
+                        }
                     }
                 }
                 .navigationTitle("Rate")
@@ -951,12 +953,13 @@ struct ContentView: View {
     }
     
     
-    
+
     struct ContentView_Previews: PreviewProvider {
         static var previews: some View {
             ContentView()
                 .environmentObject(UserSession())
-            //   ProfileView(username: "ozaancelebi", email: "ozancelebi26@gmail.com", name: "Ozan", surname: "Çelebi", password: "Ozan1234.")
         }
     }
+
+    
 }

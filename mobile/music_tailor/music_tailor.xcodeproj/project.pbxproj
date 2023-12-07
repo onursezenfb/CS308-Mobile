@@ -9,9 +9,9 @@
 /* Begin PBXBuildFile section */
 		9351CF432AF4CF440098CD8F /* music_tailorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB88A07E2AF3BC1000160AD2 /* music_tailorApp.swift */; };
 		93BBA3142B1BAA540026F9A9 /* AddFriendView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93BBA3132B1BAA540026F9A9 /* AddFriendView.swift */; };
-		93CBA1E62B1E297F0062A920 /* ObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93CBA1E52B1E297F0062A920 /* ObservableObject.swift */; };
 		93CBA1E82B1F3D9C0062A920 /* ReccomendationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93CBA1E72B1F3D9C0062A920 /* ReccomendationView.swift */; };
 		93CBA1EA2B1F781F0062A920 /* EnergyDanceabilityRecommendationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93CBA1E92B1F781F0062A920 /* EnergyDanceabilityRecommendationView.swift */; };
+		AB29E1882B21D302003D37A4 /* ObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB29E1872B21D302003D37A4 /* ObservableObject.swift */; };
 		AB88A0812AF3BC1000160AD2 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB88A0802AF3BC1000160AD2 /* LoginView.swift */; };
 		AB88A0832AF3BC1200160AD2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB88A0822AF3BC1200160AD2 /* Assets.xcassets */; };
 		AB88A0862AF3BC1200160AD2 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB88A0852AF3BC1200160AD2 /* Preview Assets.xcassets */; };
@@ -41,9 +41,9 @@
 
 /* Begin PBXFileReference section */
 		93BBA3132B1BAA540026F9A9 /* AddFriendView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFriendView.swift; sourceTree = "<group>"; };
-		93CBA1E52B1E297F0062A920 /* ObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableObject.swift; sourceTree = "<group>"; };
 		93CBA1E72B1F3D9C0062A920 /* ReccomendationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReccomendationView.swift; sourceTree = "<group>"; };
 		93CBA1E92B1F781F0062A920 /* EnergyDanceabilityRecommendationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnergyDanceabilityRecommendationView.swift; sourceTree = "<group>"; };
+		AB29E1872B21D302003D37A4 /* ObservableObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObservableObject.swift; sourceTree = "<group>"; };
 		AB88A07B2AF3BC1000160AD2 /* music_tailor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = music_tailor.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB88A07E2AF3BC1000160AD2 /* music_tailorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = music_tailorApp.swift; sourceTree = "<group>"; };
 		AB88A0802AF3BC1000160AD2 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
@@ -111,9 +111,9 @@
 				AB88A0822AF3BC1200160AD2 /* Assets.xcassets */,
 				AB88A0842AF3BC1200160AD2 /* Preview Content */,
 				AB88A0A82AF3BC4B00160AD2 /* SignUpView.swift */,
+				AB29E1872B21D302003D37A4 /* ObservableObject.swift */,
 				ABE43CA92AFCD84C00B53FD5 /* ContentView.swift */,
 				93BBA3132B1BAA540026F9A9 /* AddFriendView.swift */,
-				93CBA1E52B1E297F0062A920 /* ObservableObject.swift */,
 				93CBA1E72B1F3D9C0062A920 /* ReccomendationView.swift */,
 				93CBA1E92B1F781F0062A920 /* EnergyDanceabilityRecommendationView.swift */,
 			);
@@ -282,7 +282,7 @@
 				AB88A0812AF3BC1000160AD2 /* LoginView.swift in Sources */,
 				93BBA3142B1BAA540026F9A9 /* AddFriendView.swift in Sources */,
 				AB88A0A92AF3BC4B00160AD2 /* SignUpView.swift in Sources */,
-				93CBA1E62B1E297F0062A920 /* ObservableObject.swift in Sources */,
+				AB29E1882B21D302003D37A4 /* ObservableObject.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

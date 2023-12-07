@@ -401,6 +401,7 @@ struct UsernameView: View {
     @State private var goBack = false
     @State private var usernameError: String? = nil
     @State private var isEverythingValid = false
+    @State private var navigateToLogin = false
 
 
     var body: some View {
@@ -533,7 +534,7 @@ struct UsernameView: View {
                         Spacer().frame(height: 30)
                     }
                     
-                    NavigationLink(destination: LoginView().navigationBarBackButtonHidden(true), isActive: $isEverythingValid) {
+                    NavigationLink(destination: LoginView().navigationBarBackButtonHidden(true), isActive: $navigateToLogin) {
                         EmptyView()
                     }
                     .opacity(0)
@@ -552,7 +553,7 @@ struct UsernameView: View {
                         Button(action: {
                             checkFields()
                         }) {
-                            Text("Next")
+                            Text("Create Account")
                                 .foregroundColor(.white)
                                 .frame(width: 217, height: 50)
                                 .background(Color.pink)
@@ -574,12 +575,30 @@ struct UsernameView: View {
     
     func checkFields() {
         if username.count >= 3 && !name.isEmpty && !surname.isEmpty {
-            // All fields are valid
-            isEverythingValid = true
+            // All fields are valid so far
             usernameError = nil
 
             // Check if the username is available
-            checkUsernameAvailability()
+            checkUsernameAvailability { isAvailable in
+                if isAvailable {
+                    // If username is available and other conditions are met, proceed to register
+                    let userSess = UserSess(
+                        username: self.username,
+                        email: self.email,
+                        name: self.name,
+                        surname: self.surname,
+                        password: self.password,
+                        dateOfBirth: "1990-01-01", // Default value or dynamic
+                        language: "English",      // Default value or dynamic
+                        subscription: "free",     // Default value or dynamic
+                        rateLimit: "5"            // Default value or dynamic
+                    )
+                    self.registerUser(userSess: userSess)
+                } else {
+                    // Handle the case where the username is not available
+                    self.usernameError = "Username is already taken."
+                }
+            }
         } else {
             // Set an error message based on the specific condition not met
             if name.isEmpty || surname.isEmpty || username.isEmpty {
@@ -587,38 +606,80 @@ struct UsernameView: View {
             } else {
                 usernameError = "Username must be at least 3 characters."
             }
-            isEverythingValid = false
         }
     }
 
-    func checkUsernameAvailability() {
-        // Replace with your API endpoint URL for checking username availability
+
+    func checkUsernameAvailability(completion: @escaping (Bool) -> Void) {
         guard let url = URL(string: "http://127.0.0.1:8000/api/users/\(username)") else {
+            completion(false)
             return
         }
 
         URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error {
-                print("Error: \(error)")
-            } else if let data = data {
-                // Parse and handle the data as needed
+            var isAvailable = false
+
+            if let data = data {
                 do {
-                    let decodedData = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-                    
-                    // Check the response to determine if the username is available
-                    if let isAvailable = decodedData?["isAvailable"] as? Bool {
-                        if isAvailable {
-                            print("Username is available.")
-                            // Proceed with registration logic here
-                        } else {
-                            print("This username is already taken.")
-                            // Handle the case where the username is not available
+                    if let decodedData = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                        if decodedData["message"] as? String == "User not found" {
+                            isAvailable = true
                         }
-                    } else {
-                        print("Invalid response format.")
                     }
                 } catch {
                     print("Error decoding data: \(error)")
+                }
+            }
+
+            DispatchQueue.main.async {
+                completion(isAvailable)
+            }
+        }
+        .resume()
+    }
+
+
+
+    
+    func registerUser(userSess: UserSess) {
+        guard let url = URL(string: "http://127.0.0.1:8000/api/users") else {
+            print("Invalid URL")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        do {
+            let jsonData = try JSONEncoder().encode(userSess)
+            request.httpBody = jsonData
+        } catch {
+            print("Error encoding user data: \(error)")
+            return
+        }
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                // Handle the error scenario
+                print("Error: \(error)")
+                DispatchQueue.main.async {
+                    self.usernameError = "Error: \(error.localizedDescription)"
+                }
+                return
+            }
+
+            if let httpResponse = response as? HTTPURLResponse {
+                DispatchQueue.main.async {
+                    if httpResponse.statusCode == 200 {
+                        // Handle successful registration
+                        print("User registered successfully.")
+                        self.navigateToLogin = true  // Trigger navigation to LoginView
+                    } else {
+                        // Handle different HTTP response codes as needed
+                        print("Registration failed with HTTP Code: \(httpResponse.statusCode)")
+                        self.usernameError = "Registration failed with HTTP Code: \(httpResponse.statusCode)"
+                    }
                 }
             }
         }
@@ -626,7 +687,32 @@ struct UsernameView: View {
     }
 
 
+
+
+
+
 }
+
+
+struct UserSess: Encodable {
+    var username: String
+    var email: String
+    var name: String
+    var surname: String
+    var password: String
+    var dateOfBirth: String
+    var language: String
+    var subscription: String
+    var rateLimit: String
+
+    enum CodingKeys: String, CodingKey {
+        case username, email, name, surname, password
+        case dateOfBirth = "date_of_birth"
+        case language, subscription
+        case rateLimit = "rate_limit"
+    }
+}
+
 
 
 #Preview {

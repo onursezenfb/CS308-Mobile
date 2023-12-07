@@ -130,7 +130,7 @@ struct LoginView: View {
                     }
                     
                     Button(action: {
-                        validateCredentials(username: email, password: password)
+                        validateCredentials(email: email, password: password)
                     }) {
                         Text("Login")
                             .foregroundColor(.white)
@@ -176,54 +176,67 @@ struct LoginView: View {
         }
     }
     
-    func validateCredentials(username: String, password: String) {
-        let apiURL = "http://127.0.0.1:8000/api/users"
-        guard let url = URL(string: apiURL) else { return }
+    func validateCredentials(email: String, password: String) {
+        // Step 1: POST Request for Credential Validation
+        let loginURL = "http://127.0.0.1:8000/api/user/mobilelogin"
+        guard let loginUrl = URL(string: loginURL) else { return }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        var loginRequest = URLRequest(url: loginUrl)
+        loginRequest.httpMethod = "POST"
+        loginRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let httpResponse = response as? HTTPURLResponse {
-                if (200..<300).contains(httpResponse.statusCode) {
-                    do {
-                        if let users = try JSONSerialization.jsonObject(with: data!, options: []) as? [[String: Any]] {
-                            if let user = users.first(where: { ($0["email"] as? String) == email && ($0["language"] as? String) == password }) {
-                                // Login successful
+        let loginBody: [String: String] = ["email": email, "password": password]
+        guard let loginJsonData = try? JSONSerialization.data(withJSONObject: loginBody, options: []) else { return }
+        loginRequest.httpBody = loginJsonData
+
+        URLSession.shared.dataTask(with: loginRequest) { data, response, error in
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                // Step 2: GET Request for User Session Details
+                let sessionURL = "http://127.0.0.1:8000/api/users"
+                guard let sessionUrl = URL(string: sessionURL) else { return }
+
+                var sessionRequest = URLRequest(url: sessionUrl)
+                sessionRequest.httpMethod = "GET"
+                sessionRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+                URLSession.shared.dataTask(with: sessionRequest) { data, response, error in
+                    if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                        do {
+                            if let users = try JSONSerialization.jsonObject(with: data!, options: []) as? [[String: Any]],
+                               let user = users.first(where: { ($0["email"] as? String) == email }) {
                                 DispatchQueue.main.async {
+                                    // Update user session details
                                     self.userSession.username = user["username"] as? String
                                     self.userSession.email = user["email"] as? String
                                     self.userSession.name = user["name"] as? String
                                     self.userSession.surname = user["surname"] as? String
                                     loggedIn = true
                                 }
-                            } else {
-                                // Invalid email or language
-                                DispatchQueue.main.async {
-                                    wrongCredentials = true
-                                    errorMessage = "Invalid email or language."
-                                }
+                            }
+                        } catch {
+                            DispatchQueue.main.async {
+                                errorMessage = "Error decoding JSON: \(error)"
                             }
                         }
-                    } catch {
+                    } else {
                         DispatchQueue.main.async {
-                            errorMessage = "Error decoding JSON: \(error)"
+                            errorMessage = "Unable to fetch user session. Status code: \(httpResponse.statusCode)"
                         }
                     }
-                } else {
-                    // Login failed
-                    DispatchQueue.main.async {
-                        errorMessage = "Login failed. Status code: \(httpResponse.statusCode)"
-                    }
-                }
+                }.resume()
+
             } else if let error = error {
                 DispatchQueue.main.async {
-                    errorMessage = "Network error: \(error.localizedDescription)"
+                    errorMessage = "Login error: \(error.localizedDescription)"
+                }
+            } else {
+                DispatchQueue.main.async {
+                    errorMessage = "Invalid credentials."
                 }
             }
         }.resume()
     }
+
 
 
 }
