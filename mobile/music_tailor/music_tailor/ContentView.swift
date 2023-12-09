@@ -174,16 +174,10 @@ struct ContentView: View {
     
     
     struct HomeView: View {
-        
-        
-
-        
         @State private var searchText: String = ""
         @State private var currentFilter: Filter = .all // Default filter is "All"
-        
         @State private var showingRatingSheet = false
         @State private var currentItemID: String?
-        
         @State private var currentItemType: ItemType?
         @State private var albums: [Album] = []
         @State private var songs: [Song] = []
@@ -316,9 +310,14 @@ struct ContentView: View {
                             case .songs:
                                 do {
                                     self.songs = try JSONDecoder().decode([Song].self, from: data)
+                                    print("Songs fetched successfully. Count: \(self.songs.count)")
                                 } catch {
                                     print("Error decoding songs JSON: \(error)")
+                                    if let dataString = String(data: data, encoding: .utf8) {
+                                        print("Received song data: \(dataString)")
+                                    }
                                 }
+
                             case .albums:
                                 do {
                                     self.albums = try JSONDecoder().decode([Album].self, from: data)
@@ -345,22 +344,35 @@ struct ContentView: View {
         
         private func filteredItems() -> [FilterItem] {
             var items: [FilterItem] = []
-            
+
             switch currentFilter {
             case .songs:
-                items = songs.compactMap { song in
-                    if let album = albums.first(where: { $0.album_id == song.album_id }),
-                       let performer = performers.first(where: { $0.artist_id == album.artist_id }) {
-                        return FilterItem(id: song.song_id, name: song.name, identifier: "Song - \(performer.name)", imageUrl: album.image_url,itemType: .song)
+                items = songs.map { song in
+                    let album = albums.first(where: { $0.album_id == song.album_id })
+                    let performer = album.flatMap { alb in
+                        performers.first(where: { $0.artist_id == alb.artist_id })
                     }
-                    return nil
+
+                    return FilterItem(
+                        id: song.song_id,
+                        name: song.name,
+                        identifier: "Song - \(performer?.name ?? "Unknown Performer")",
+                        imageUrl: album?.image_url ?? "default_image_url",
+                        itemType: .song
+                    )
                 }
+
             case .albums:
                 items = albums.map { album in
-                    if let performer = performers.first(where: { $0.artist_id == album.artist_id }) {
-                        return FilterItem(id: album.album_id, name: album.name, identifier: "Album - \(performer.name)", imageUrl: album.image_url,itemType: .album)
-                    }
-                    return FilterItem(id: album.album_id, name: album.name, identifier: "Album", imageUrl: album.image_url,itemType: .album)
+                    let performer = performers.first(where: { $0.artist_id == album.artist_id })
+
+                    return FilterItem(
+                        id: album.album_id,
+                        name: album.name,
+                        identifier: "Album - \(performer?.name ?? "Unknown Performer")",
+                        imageUrl: album.image_url,
+                        itemType: .album
+                    )
                 }
             case .performers:
                 items = performers.map { performer in
@@ -444,104 +456,106 @@ struct ContentView: View {
     
     
     struct UploadMusicFormView: View {
-        
-        /*
-         
-         spotify linki
-         
-         
-         */
-        
-        
-        
-       
-        @State private var songName: String = ""
-        @State private var publicationDate: String = "" // for publ_date
-        @State private var performers: String = "" // for performers (stored as JSON)
-        @State private var songWriter: String = ""
-        @State private var genre: String = ""
-        @State private var recordingType: String = "" // for recording_type (live/studio/radio)
-        @State private var songLengthSeconds: String = "" // for song_length_seconds
-        @State private var tempo: String = "" // for tempo
-        @State private var mood: String = ""
-        @State private var language: String = ""
-        @State private var systemEntryDate: String = "" // for system_entry_date (timestamp)
-        @State private var albumName: String = "" // for album_id
-        var body: some View {
-            NavigationView {
-                ZStack {
-                    Color.white
-                        .ignoresSafeArea()
-                    
-                    VStack{
-                        Spacer().frame(height: 30)
+            @Environment(\.presentationMode) var presentationMode
+            @State private var spotifyLink: String = ""
+
+            var body: some View {
+                NavigationView {
+                    ZStack {
+                        Color.white.ignoresSafeArea()
                         
-                        HStack{
-                            VStack{
-                                Text("Upload Music Into")
-                                    .font(.largeTitle)
-                                    .bold()
-                                    .foregroundColor(.black)
-                                    .frame(width: 300, height: 5, alignment: .leading)
-                                Text("Music Tailor")
-                                    .font(Font.system(size: 36, design: .rounded))
-                                    .bold()
-                                    .foregroundColor(.pink)
-                                    .frame(width: 300, height: 50, alignment: .leading)
-                            }
-                            Spacer().frame(width: 40)
-                        }
-                        
-                        
-                        Form() {
-                            Section(header: Text("ENTER  Details").foregroundColor(.black)) {
-                                TextField("Song Name", text: $songName)
-                                TextField("Performers (Comma Separated)", text: $performers)
-                                TextField("Album Name", text: $albumName)
-                                TextField("Song Writer", text: $songWriter)
-                                TextField("Genres (Comma Separated)", text: $genre)
-                                TextField("Language", text: $language)
-                                TextField("Publication Date (YYYY-MM-DD)", text: $publicationDate)
-                                TextField("Recording Type (live/studio/radio)", text: $recordingType)
-                                TextField("Song Length (seconds)", text: $songLengthSeconds)
-                                TextField("Tempo (BPM)", text: $tempo)
-                                TextField("Mood", text: $mood)
-                                
-                                Button("Submit") {
-                                    // Handle the submission of the form
-                                    // Get the current date and time
-                                    let currentDate = Date()
-                                    
-                                    // Create a date formatter to format the date as "YYYY-MM-dd HH:mm:ss"
-                                    let dateFormatter = DateFormatter()
-                                    dateFormatter.dateFormat = "YYYY-MM-dd HH:mm:ss"
-                                    
-                                    // Update the systemEntryDate state variable with the formatted date
-                                    systemEntryDate = dateFormatter.string(from: currentDate)
-                                    
-                                    // Now you can use the systemEntryDate value in your database operation or wherever needed
-                                    print("System Entry Date: \(systemEntryDate)")
+                        VStack {
+                            Spacer().frame(height: 30)
+                            
+                            Text("Upload Music Into Music Tailor")
+                                .font(.largeTitle)
+                                .bold()
+                                .foregroundColor(.black)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal)
+                            
+                            Text("Enter Spotify Link Below")
+                                .font(Font.system(size: 20, design: .rounded))
+                                .bold()
+                                .foregroundColor(.pink)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal)
+                            
+                            Form {
+                                Section(header: Text("Spotify Song Link").foregroundColor(.black)) {
+                                    TextField("Enter Spotify Link", text: $spotifyLink)
                                 }
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(Color.pink)
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
+                                
+                                Section {
+                                    Button("Submit") {
+                                        uploadSpotifyLink()
+                                    }
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color.pink)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(8)
+                                }
                             }
                         }
-                        
+                        .background(Color.pink.opacity(0.15))
                     }
-                    .background(Color.pink.opacity(0.15))
-                    .cornerRadius(0)
-                    
-                    
+                }
+            }
+            
+            
+            func uploadSpotifyLink() {
+                let urlString = "http://127.0.0.1:8000/api/spotify/import"
+                guard let url = URL(string: urlString) else {
+                    print("Invalid URL")
+                    return
                 }
                 
+                var request = URLRequest(url: url)
+                request.httpMethod = "POST"
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                
+                let body: [String: String] = ["spotifyLink": spotifyLink]
+                guard let jsonData = try? JSONSerialization.data(withJSONObject: body, options: []) else {
+                    print("Failed to serialize JSON")
+                    return
+                }
+                request.httpBody = jsonData
+                print("Uploading Spotify Link: \(spotifyLink)")
+
+                URLSession.shared.dataTask(with: request) { data, response, error in
+                    DispatchQueue.main.async {
+                        if let error = error {
+                            // Handle the error scenario
+                            print("Error: \(error.localizedDescription)")
+                            return
+                        }
+                        guard let data = data else {
+                            print("No data received")
+                            return
+                        }
+
+                        // Optionally, handle the response data
+                        if let responseStr = String(data: data, encoding: .utf8) {
+                            print("Response: \(responseStr)")
+                        }
+
+                        // Dismiss the current view or handle the UI update
+                        self.presentationMode.wrappedValue.dismiss()
+                    }
+                }.resume() // Don't forget to start the task
             }
+
         }
-    }
-    
-    
+
+        struct UploadMusicFormView_Previews: PreviewProvider {
+            static var previews: some View {
+                UploadMusicFormView()
+            }
+            
+        }
+
+
     
     
     
