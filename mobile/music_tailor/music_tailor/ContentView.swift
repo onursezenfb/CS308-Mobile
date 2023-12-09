@@ -53,10 +53,7 @@ struct ContentView: View {
                     .accentColor(.pink)
                 }
             }
-        
-        
     }
-    
     
    
 
@@ -214,6 +211,7 @@ struct ContentView: View {
                             .background(Color.gray.opacity(0.2))
                             .cornerRadius(8)
                             .frame(maxWidth: .infinity)
+                            .autocapitalization(.none)
                             .onChange(of: searchText, perform: { _ in
                                 fetchSearchResults()
                             })
@@ -288,50 +286,58 @@ struct ContentView: View {
         }
         
         private func fetchSearchResults() {
-            // Define the API endpoint URLs based on the current filter and searchText
-            var endpointURL: URL
-            switch currentFilter {
-            case .songs:
-                endpointURL = URL(string: "http://127.0.0.1:8000/api/songs/name/\(searchText)")!
-            case .albums:
-                endpointURL = URL(string: "http://127.0.0.1:8000/api/albums/name/\(searchText)")!
-            case .performers:
-                endpointURL = URL(string: "http://127.0.0.1:8000/api/performers/name/\(searchText)")!
-            case .all:
-                // Handle the case when "All" is selected
-                return
-            }
+            // Base URL for the search API
+            let baseURL = "http://127.0.0.1:8000/api/search"
             
-            // Create URLSession tasks for the current filter
-            let task = URLSession.shared.dataTask(with: endpointURL) { data, response, error in
-                if let data = data {
-                    switch currentFilter {
-                    case .songs:
-                        do {
-                            let response = try JSONDecoder().decode(Response<Song>.self, from: data)
-                            songs = response.data
-                        } catch {
-                            print("Error decoding songs JSON: \(error)")
-                        }
-                    case .albums:
-                        do {
-                            let response = try JSONDecoder().decode(Response<Album>.self, from: data)
-                            albums = response.data
-                        } catch {
-                            print("Error decoding albums JSON: \(error)")
-                        }
-                    case .performers:
-                        do {
-                            let response = try JSONDecoder().decode(Response<Performer>.self, from: data)
-                            performers = response.data
-                        } catch {
-                            print("Error decoding performers JSON: \(error)")
-                        }
-                    case .all:
-                        break
-                    }
+            // Construct the endpoint URL based on the current filter and searchText
+            var endpointURL: URL {
+                switch currentFilter {
+                case .songs:
+                    return URL(string: "\(baseURL)/song/\(searchText)")!
+                case .albums:
+                    return URL(string: "\(baseURL)/album/\(searchText)")!
+                case .performers:
+                    return URL(string: "\(baseURL)/performer/\(searchText)")!
+                case .all:
+                    return URL(string: "\(baseURL)/\(searchText)")!
                 }
             }
+            
+            let task = URLSession.shared.dataTask(with: endpointURL) { data, response, error in
+                    if let data = data {
+                        DispatchQueue.main.async {
+                            switch currentFilter {
+                            case .performers:
+                                do {
+                                    self.performers = try JSONDecoder().decode([Performer].self, from: data)
+                                } catch {
+                                    print("Error decoding performers JSON: \(error)")
+                                }
+                            case .songs:
+                                do {
+                                    self.songs = try JSONDecoder().decode([Song].self, from: data)
+                                } catch {
+                                    print("Error decoding songs JSON: \(error)")
+                                }
+                            case .albums:
+                                do {
+                                    self.albums = try JSONDecoder().decode([Album].self, from: data)
+                                } catch {
+                                    print("Error decoding albums JSON: \(error)")
+                                }
+                            case .all:
+                                do {
+                                    let response = try JSONDecoder().decode(CombinedResponse.self, from: data)
+                                    self.performers = response.performers ?? []
+                                    self.songs = response.songs ?? []
+                                    self.albums = response.albums ?? []
+                                } catch {
+                                    print("Error decoding combined JSON: \(error)")
+                                }
+                            }
+                        }
+                    }
+                }
             
             // Start URLSession task
             task.resume()
@@ -366,10 +372,6 @@ struct ContentView: View {
             
             return items
         }
-        
-        
-        
-        
     }
     
     
@@ -390,7 +392,12 @@ struct ContentView: View {
             self.itemType = itemType
         }
     }
-    
+    struct CombinedResponse: Decodable {
+        var performers: [Performer]?
+        var songs: [Song]?
+        var albums: [Album]?
+    }
+
     
     
     struct Album: Identifiable, Decodable {
@@ -428,8 +435,9 @@ struct ContentView: View {
     
     
     struct Response<T: Decodable>: Decodable {
-        var data: [T]
+        var data: [String: T]
     }
+
     
     
     
@@ -951,15 +959,12 @@ struct ContentView: View {
         
         func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
     }
-    
-    
+}
 
-    struct ContentView_Previews: PreviewProvider {
-        static var previews: some View {
-            ContentView()
-                .environmentObject(UserSession())
-        }
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+            .environmentObject(UserSession.mock)
     }
-
-    
 }

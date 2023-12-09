@@ -236,9 +236,6 @@ struct LoginView: View {
             }
         }.resume()
     }
-
-
-
 }
     
     
