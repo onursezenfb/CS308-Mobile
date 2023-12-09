@@ -582,6 +582,8 @@ struct ContentView: View {
     }
 
 
+    
+
     struct PlaylistsView: View {
         // Define a two-column grid layout
         private var gridItems = [GridItem(.flexible()), GridItem(.flexible())]
@@ -589,34 +591,54 @@ struct ContentView: View {
         var body: some View {
             NavigationView {
                 ScrollView {
+                    // Title HStack
+                    HStack {
+                        Text("Your")
+                            .font(.largeTitle)
+                            .bold()
+                            .foregroundColor(.black)
+                        
+                        Text("Music")
+                            .font(Font.system(size: 36, design: .rounded))
+                            .bold()
+                            .foregroundColor(.pink)
+                    }
+                    .padding(.top, 20) // Add some top padding to the title
+                    
+                    // Buttons grid
                     LazyVGrid(columns: gridItems, spacing: 20) {
                         NavigationLink(destination: RecommendationView()) {
-                            RecommendationButtonLabel("Fav Genre Recommendations")
+                            RecommendationButtonLabel("Your Genre Taste")
                         }
                         NavigationLink(destination: EnergyDanceabilityRecommendationView()) {
-                            RecommendationButtonLabel("Your Energy & Dance Vibes")
+                            RecommendationButtonLabel("Energy & Dance Vibes")
                         }
                         NavigationLink(destination: MoodyMix()) {
-                            RecommendationButtonLabel("A Moody Mix\nFor You")
+                            RecommendationButtonLabel("Moody Mix For You")
                         }
                         NavigationLink(destination: EnergeticMix()) {
-                            RecommendationButtonLabel("An Energetic Mix For You")
+                            RecommendationButtonLabel("Energetic Mix For You")
                         }
                     }
-                    .padding()
+                    .padding() // Add padding around the grid
                 }
-                .navigationTitle("Your Music")
-                .background(Color.pink.opacity(0.2))
+                .navigationTitle("") // Hide the default navigation bar title
+                .navigationBarHidden(true) // Hide the navigation bar to use the custom title
+                .background(Color.gray.opacity(0.2).edgesIgnoringSafeArea(.all)) // Background color
             }
         }
-
+        
+        // Custom view for the button label
         private func RecommendationButtonLabel(_ title: String) -> some View {
             Text(title)
-                .font(.headline)
+                .fontWeight(.medium)
                 .foregroundColor(.white)
-                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 120, maxHeight: .infinity)
-                .background(Color.pink)
-                .cornerRadius(10)
+                .multilineTextAlignment(.center) // Ensure the text is centered
+                .padding() // Add padding inside the button
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 120) // Set a minimum height for buttons
+                .background(LinearGradient(gradient: Gradient(colors: [.pink, .red]), startPoint: .topLeading, endPoint: .bottomTrailing)) // Gradient background
+                .cornerRadius(15) // Rounded corners
+                .shadow(radius: 5) // Add a shadow for a 3D effect
         }
     }
 
@@ -624,60 +646,58 @@ struct ContentView: View {
     
     
     struct FriendsView: View {
-        
-        
         var body: some View {
-            VStack(spacing: 10) {
-                HStack {
-                    Text("Your")
-                        .font(.largeTitle)
-                        .bold()
-                        .foregroundColor(.black)
+            NavigationView {
+                ZStack {
+                    // Set the entire screen's background to pink
+                    Color.gray.opacity(0.2).edgesIgnoringSafeArea(.all)
                     
-                    Text("Friends")
-                        .font(Font.system(size: 36, design: .rounded))
-                        .bold()
-                        .foregroundColor(.pink)
-                }
-                
-                Button(action: {
-                    // Action for "Add Friends" button
-                }) {
-                    NavigationLink(destination: AddFriendView()) {
-                        Text("Add Friends")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.pink)
-                            .cornerRadius(10)
+                    VStack(spacing: 10) {
+                        HStack {
+                            Text("Your")
+                                .font(.largeTitle)
+                                .bold()
+                                .foregroundColor(.black)
+                            
+                            Text("Friends")
+                                .font(Font.system(size: 36, design: .rounded))
+                                .bold()
+                                .foregroundColor(.pink)
+                        }
+                        .padding(.bottom, 20)
+                        
+                        NavigationLink(destination: AddFriendView()) {
+                            Text("Add Friends")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding()
+                                .frame(minWidth: 0, maxWidth: .infinity)
+                                .background(Color.pink)
+                                .cornerRadius(10)
+                        }
+                        .padding(.bottom, 10)
+                        
+                        Button(action: {
+                            // Action for "Manage Your Friends" button
+                        }) {
+                            Text("Manage Your Friends")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding()
+                                .frame(minWidth: 0, maxWidth: .infinity)
+                                .background(Color.pink)
+                                .cornerRadius(10)
+                        }
+                        
+                        Spacer()
                     }
+                    .padding() // Adjust padding if needed
                 }
-                
-                Button(action: {
-                    // Action for "Manage Your Friends" button
-                }) {
-                    Text("Manage Your Friends")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color.pink)
-                        .cornerRadius(10)
-                }
-                
-                Spacer()
+                .navigationBarHidden(true) // Optionally hide the navigation bar if you want
             }
-            .padding() // Adjust padding if needed
-            .background(
-                Rectangle()
-                    .fill(Color.pink.opacity(0.2))
-                    .cornerRadius(20)
-                    .frame(width: 500, height: 700) // Ensures the rectangle takes the full width available
-            )
         }
     }
-    
-    
-    
+
     
     
     
