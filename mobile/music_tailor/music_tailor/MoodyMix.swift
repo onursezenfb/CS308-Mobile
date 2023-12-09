@@ -1,42 +1,42 @@
 //
-//  EnergyDanceabilityRecommendationView.swift
+//  MoodyMix.swift
 //  music_tailor
 //
-//  Created by Şimal on 5.12.2023.
+//  Created by selin ceydeli on 12/9/23.
 //
 
 import SwiftUI
 
-// Define Song and RecommendedSong structures
-struct EnergySong: Decodable {
+// Define MoodySong and MoodyRecommendedSong structures
+struct MoodySong: Decodable {
     var song_id: String
     var name: String
     var album_id: String
     // Include other relevant fields
 }
 
-struct EnergyRecommendedSong {
-    var song: EnergySong
+struct MoodyRecommendedSong {
+    var song: MoodySong
     var albumImageUrl: String?
     var albumName: String
 }
 
-struct EnergyDanceabilityRecommendationView: View {
+struct MoodyMix: View {
     @EnvironmentObject var userSession: UserSession
-    @State private var recommendedSongs: [EnergyRecommendedSong] = []
+    @State private var recommendedSongs: [MoodyRecommendedSong] = []
 
     var body: some View {
         VStack {
-            Text("Energy & Dance")
+            Text("Your Moody")
                 .font(.largeTitle)
                 .bold()
                 .foregroundColor(.black)
-                .frame(width: 300, alignment: .leading)
-            Text("Vibes")
-                .font(Font.system(size: 30, design: .rounded))
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Text("Recommendations")
+                .font(.title)
                 .bold()
                 .foregroundColor(.pink)
-                .frame(width: 300, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             List(recommendedSongs, id: \.song.song_id) { recommendedSong in
                 HStack {
@@ -46,32 +46,40 @@ struct EnergyDanceabilityRecommendationView: View {
                             case .success(let image):
                                 image.resizable()
                             case .failure:
-                                Image(systemName: "photo")
-                            default:
-                                Image(systemName: "photo")
+                                Image(systemName: "photo").resizable()
+                            case .empty:
+                                ProgressView()
+                            @unknown default:
+                                Image(systemName: "photo").resizable()
                             }
                         }
+                        .scaledToFill()
                         .frame(width: 50, height: 50)
+                        .cornerRadius(8)
                     }
                     VStack(alignment: .leading) {
                         Text(recommendedSong.song.name)
-                        Text("Album: \(recommendedSong.albumName)")
+                            .font(.headline)
+                        Text(recommendedSong.albumName)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
                     }
                 }
             }
         }
         .onAppear {
-            fetchEnergyDanceabilityRecommendations()
+            fetchMoodyMixRecommendations()
         }
+        .padding()
     }
 
-    private func fetchEnergyDanceabilityRecommendations() {
+    private func fetchMoodyMixRecommendations() {
         guard let username = userSession.username, !username.isEmpty else {
             print("Username is empty")
             return
         }
 
-        let urlString = "http://127.0.0.1:8000/api/users/\(username)/energy-danceability-recommendations"
+        let urlString = "http://127.0.0.1:8000/api/users/\(username)/moody-recommendations"
         guard let url = URL(string: urlString) else {
             print("Invalid URL: \(urlString)")
             return
@@ -89,11 +97,11 @@ struct EnergyDanceabilityRecommendationView: View {
             }
 
             do {
-                typealias SongsResponse = [String: EnergySong]
+                typealias SongsResponse = [String: MoodySong]
                 let songsResponse = try JSONDecoder().decode(SongsResponse.self, from: data)
                 let songs = Array(songsResponse.values) // Convert dictionary values to an array
                 DispatchQueue.main.async {
-                    self.recommendedSongs = songs.map { EnergyRecommendedSong(song: $0, albumImageUrl: nil, albumName: "") }
+                    self.recommendedSongs = songs.map { MoodyRecommendedSong(song: $0, albumImageUrl: nil, albumName: "") }
                     for song in songs {
                         fetchAlbum(for: song.album_id, song: song)
                     }
@@ -104,7 +112,7 @@ struct EnergyDanceabilityRecommendationView: View {
         }.resume()
     }
 
-    private func fetchAlbum(for albumID: String, song: EnergySong) {
+    private func fetchAlbum(for albumID: String, song: MoodySong) {
         guard let url = URL(string: "http://127.0.0.1:8000/api/albums/\(albumID)") else { return }
 
         URLSession.shared.dataTask(with: url) { data, response, error in
@@ -116,7 +124,7 @@ struct EnergyDanceabilityRecommendationView: View {
                         self.recommendedSongs[index].albumImageUrl = album.image_url
                         self.recommendedSongs[index].albumName = album.name
                     } else {
-                        self.recommendedSongs.append(EnergyRecommendedSong(song: song, albumImageUrl: album.image_url, albumName: album.name))
+                        self.recommendedSongs.append(MoodyRecommendedSong(song: song, albumImageUrl: album.image_url, albumName: album.name))
                     }
                 }
             }

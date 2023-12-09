@@ -1,38 +1,38 @@
 //
-//  EnergyDanceabilityRecommendationView.swift
+//  EnergeticMix.swift
 //  music_tailor
 //
-//  Created by Şimal on 5.12.2023.
+//  Created by selin ceydeli on 12/9/23.
 //
 
 import SwiftUI
 
-// Define Song and RecommendedSong structures
-struct EnergySong: Decodable {
+// Define EnergeticSong and EnergeticRecommendedSong structures
+struct EnergeticSong: Decodable {
     var song_id: String
     var name: String
     var album_id: String
     // Include other relevant fields
 }
 
-struct EnergyRecommendedSong {
-    var song: EnergySong
+struct EnergeticRecommendedSong {
+    var song: EnergeticSong
     var albumImageUrl: String?
     var albumName: String
 }
 
-struct EnergyDanceabilityRecommendationView: View {
+struct EnergeticMix: View {
     @EnvironmentObject var userSession: UserSession
-    @State private var recommendedSongs: [EnergyRecommendedSong] = []
+    @State private var recommendedSongs: [EnergeticRecommendedSong] = []
 
     var body: some View {
         VStack {
-            Text("Energy & Dance")
+            Text("Your Energetic")
                 .font(.largeTitle)
                 .bold()
                 .foregroundColor(.black)
                 .frame(width: 300, alignment: .leading)
-            Text("Vibes")
+            Text("Recommendations")
                 .font(Font.system(size: 30, design: .rounded))
                 .bold()
                 .foregroundColor(.pink)
@@ -61,17 +61,17 @@ struct EnergyDanceabilityRecommendationView: View {
             }
         }
         .onAppear {
-            fetchEnergyDanceabilityRecommendations()
+            fetchEnergeticMixRecommendations()
         }
     }
 
-    private func fetchEnergyDanceabilityRecommendations() {
+    private func fetchEnergeticMixRecommendations() {
         guard let username = userSession.username, !username.isEmpty else {
             print("Username is empty")
             return
         }
 
-        let urlString = "http://127.0.0.1:8000/api/users/\(username)/energy-danceability-recommendations"
+        let urlString = "http://127.0.0.1:8000/api/users/\(username)/positive-recommendations"
         guard let url = URL(string: urlString) else {
             print("Invalid URL: \(urlString)")
             return
@@ -89,11 +89,11 @@ struct EnergyDanceabilityRecommendationView: View {
             }
 
             do {
-                typealias SongsResponse = [String: EnergySong]
+                typealias SongsResponse = [String: EnergeticSong]
                 let songsResponse = try JSONDecoder().decode(SongsResponse.self, from: data)
                 let songs = Array(songsResponse.values) // Convert dictionary values to an array
                 DispatchQueue.main.async {
-                    self.recommendedSongs = songs.map { EnergyRecommendedSong(song: $0, albumImageUrl: nil, albumName: "") }
+                    self.recommendedSongs = songs.map { EnergeticRecommendedSong(song: $0, albumImageUrl: nil, albumName: "") }
                     for song in songs {
                         fetchAlbum(for: song.album_id, song: song)
                     }
@@ -104,7 +104,7 @@ struct EnergyDanceabilityRecommendationView: View {
         }.resume()
     }
 
-    private func fetchAlbum(for albumID: String, song: EnergySong) {
+    private func fetchAlbum(for albumID: String, song: EnergeticSong) {
         guard let url = URL(string: "http://127.0.0.1:8000/api/albums/\(albumID)") else { return }
 
         URLSession.shared.dataTask(with: url) { data, response, error in
@@ -116,7 +116,7 @@ struct EnergyDanceabilityRecommendationView: View {
                         self.recommendedSongs[index].albumImageUrl = album.image_url
                         self.recommendedSongs[index].albumName = album.name
                     } else {
-                        self.recommendedSongs.append(EnergyRecommendedSong(song: song, albumImageUrl: album.image_url, albumName: album.name))
+                        self.recommendedSongs.append(EnergeticRecommendedSong(song: song, albumImageUrl: album.image_url, albumName: album.name))
                     }
                 }
             }

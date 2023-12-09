@@ -140,12 +140,6 @@ struct RecommendationView: View {
 
 }
 
-struct RecommendedSong {
-    var song: Song
-    var albumImageUrl: String?
-    var albumName: String
-}
-
 struct Song: Decodable {
     var song_id: String
     var isrc: String
@@ -170,6 +164,12 @@ struct Song: Decodable {
     var created_at: String?
     var updated_at: String?
     var ratings: [Rating]? // Make this optional
+}
+
+struct RecommendedSong {
+    var song: Song
+    var albumImageUrl: String?
+    var albumName: String
 }
 
 

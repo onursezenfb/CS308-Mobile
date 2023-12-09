@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		04F245DC2B24DDCF00D283F8 /* MoodyMix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F245DB2B24DDCF00D283F8 /* MoodyMix.swift */; };
+		04F245DE2B24DDFA00D283F8 /* EnergeticMix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F245DD2B24DDFA00D283F8 /* EnergeticMix.swift */; };
 		9351CF432AF4CF440098CD8F /* music_tailorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB88A07E2AF3BC1000160AD2 /* music_tailorApp.swift */; };
 		93BBA3142B1BAA540026F9A9 /* AddFriendView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93BBA3132B1BAA540026F9A9 /* AddFriendView.swift */; };
 		93CBA1E82B1F3D9C0062A920 /* ReccomendationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93CBA1E72B1F3D9C0062A920 /* ReccomendationView.swift */; };
@@ -40,6 +42,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		04F245DB2B24DDCF00D283F8 /* MoodyMix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodyMix.swift; sourceTree = "<group>"; };
+		04F245DD2B24DDFA00D283F8 /* EnergeticMix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnergeticMix.swift; sourceTree = "<group>"; };
 		93BBA3132B1BAA540026F9A9 /* AddFriendView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFriendView.swift; sourceTree = "<group>"; };
 		93CBA1E72B1F3D9C0062A920 /* ReccomendationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReccomendationView.swift; sourceTree = "<group>"; };
 		93CBA1E92B1F781F0062A920 /* EnergyDanceabilityRecommendationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnergyDanceabilityRecommendationView.swift; sourceTree = "<group>"; };
@@ -116,6 +120,8 @@
 				93BBA3132B1BAA540026F9A9 /* AddFriendView.swift */,
 				93CBA1E72B1F3D9C0062A920 /* ReccomendationView.swift */,
 				93CBA1E92B1F781F0062A920 /* EnergyDanceabilityRecommendationView.swift */,
+				04F245DD2B24DDFA00D283F8 /* EnergeticMix.swift */,
+				04F245DB2B24DDCF00D283F8 /* MoodyMix.swift */,
 			);
 			path = music_tailor;
 			sourceTree = "<group>";
@@ -279,6 +285,8 @@
 				93CBA1E82B1F3D9C0062A920 /* ReccomendationView.swift in Sources */,
 				9351CF432AF4CF440098CD8F /* music_tailorApp.swift in Sources */,
 				ABE43CAA2AFCD84C00B53FD5 /* ContentView.swift in Sources */,
+				04F245DC2B24DDCF00D283F8 /* MoodyMix.swift in Sources */,
+				04F245DE2B24DDFA00D283F8 /* EnergeticMix.swift in Sources */,
 				AB88A0812AF3BC1000160AD2 /* LoginView.swift in Sources */,
 				93BBA3142B1BAA540026F9A9 /* AddFriendView.swift in Sources */,
 				AB88A0A92AF3BC4B00160AD2 /* SignUpView.swift in Sources */,

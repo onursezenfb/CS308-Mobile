@@ -453,181 +453,174 @@ struct ContentView: View {
     
     
     
-    
-    
     struct UploadMusicFormView: View {
-            @Environment(\.presentationMode) var presentationMode
-            @State private var spotifyLink: String = ""
+        @Environment(\.presentationMode) var presentationMode
+        @State private var spotifyLink: String = ""
+        @State private var showAlert = false
+        @State private var alertMessage = ""
 
-            var body: some View {
-                NavigationView {
-                    ZStack {
-                        Color.white.ignoresSafeArea()
+        var body: some View {
+            NavigationView {
+                ZStack {
+                    Color.white.ignoresSafeArea()
+                    
+                    VStack {
+                        Spacer().frame(height: 30)
                         
-                        VStack {
-                            Spacer().frame(height: 30)
+                        Text("Upload Music Into")
+                            .font(.largeTitle)
+                            .bold()
+                            .foregroundColor(.black)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal)
+                        
+                        Text("Music Tailor")
+                            .font(Font.system(size: 36, design: .rounded))
+                            .bold()
+                            .foregroundColor(.pink)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal)
+                        
+                        Text("Enter Spotify Link Below")
+                            .font(Font.system(size: 20, design: .rounded))
+                            .bold()
+                            .foregroundColor(.pink)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal)
+                        
+                        Form {
+                            Section(header: Text("Spotify Song Link").foregroundColor(.black)) {
+                                TextField("Enter Spotify Link", text: $spotifyLink)
+                            }
                             
-                            Text("Upload Music Into Music Tailor")
-                                .font(.largeTitle)
-                                .bold()
-                                .foregroundColor(.black)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal)
-                            
-                            Text("Enter Spotify Link Below")
-                                .font(Font.system(size: 20, design: .rounded))
-                                .bold()
-                                .foregroundColor(.pink)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal)
-                            
-                            Form {
-                                Section(header: Text("Spotify Song Link").foregroundColor(.black)) {
-                                    TextField("Enter Spotify Link", text: $spotifyLink)
+                            Section {
+                                Button("Submit") {
+                                    uploadSpotifyLink()
                                 }
-                                
-                                Section {
-                                    Button("Submit") {
-                                        uploadSpotifyLink()
-                                    }
-                                    .padding()
-                                    .frame(maxWidth: .infinity)
-                                    .background(Color.pink)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(8)
-                                }
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.pink)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
                             }
                         }
-                        .background(Color.pink.opacity(0.15))
+                        .alert(isPresented: $showAlert) {
+                            Alert(title: Text("Upload Status"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+                        }
+                        .alert(isPresented: $showAlert) {
+                            Alert(title: Text("Upload Status"), message: Text(alertMessage), dismissButton: .default(Text("OK")) {
+                                // Clear the text field when the alert is dismissed
+                                spotifyLink = ""
+                            })
+                        }
                     }
+                    .background(Color.pink.opacity(0.15))
                 }
             }
+        }
+        
+        func uploadSpotifyLink() {
+            let urlString = "http://127.0.0.1:8000/api/spotify/import"
+            guard let url = URL(string: urlString) else {
+                alertMessage = "Invalid URL"
+                showAlert = true
+                return
+            }
             
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             
-            func uploadSpotifyLink() {
-                let urlString = "http://127.0.0.1:8000/api/spotify/import"
-                guard let url = URL(string: urlString) else {
-                    print("Invalid URL")
-                    return
-                }
-                
-                var request = URLRequest(url: url)
-                request.httpMethod = "POST"
-                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                
-                let body: [String: String] = ["spotifyLink": spotifyLink]
-                guard let jsonData = try? JSONSerialization.data(withJSONObject: body, options: []) else {
-                    print("Failed to serialize JSON")
-                    return
-                }
-                request.httpBody = jsonData
-                print("Uploading Spotify Link: \(spotifyLink)")
+            let body: [String: String] = ["spotifyLink": spotifyLink]
+            guard let jsonData = try? JSONSerialization.data(withJSONObject: body, options: []) else {
+                alertMessage = "Failed to serialize JSON"
+                showAlert = true
+                return
+            }
+            request.httpBody = jsonData
+            print("Uploading Spotify Link: \(spotifyLink)")
 
-                URLSession.shared.dataTask(with: request) { data, response, error in
-                    DispatchQueue.main.async {
-                        if let error = error {
-                            // Handle the error scenario
-                            print("Error: \(error.localizedDescription)")
-                            return
-                        }
-                        guard let data = data else {
-                            print("No data received")
-                            return
-                        }
-
-                        // Optionally, handle the response data
-                        if let responseStr = String(data: data, encoding: .utf8) {
-                            print("Response: \(responseStr)")
-                        }
-
-                        // Dismiss the current view or handle the UI update
-                        self.presentationMode.wrappedValue.dismiss()
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        alertMessage = "Error: \(error.localizedDescription)"
+                        showAlert = true
+                        return
                     }
-                }.resume() // Don't forget to start the task
-            }
+                    guard let data = data,
+                          let httpResponse = response as? HTTPURLResponse else {
+                        alertMessage = "No data received"
+                        showAlert = true
+                        return
+                    }
 
-        }
+                    if let responseDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: String],
+                       let message = responseDict["message"] {
+                        alertMessage = message
+                    } else {
+                        alertMessage = "Invalid response format"
+                    }
 
-        struct UploadMusicFormView_Previews: PreviewProvider {
-            static var previews: some View {
-                UploadMusicFormView()
-            }
-            
-        }
+                    if httpResponse.statusCode == 200 {
+                        // Handle successful upload
+                        alertMessage = "Successfully uploaded!"
+                    } else if httpResponse.statusCode == 409 {
+                        // Handle duplicate entry
+                        alertMessage = "Song already exists."
+                    } else if httpResponse.statusCode == 400 {
+                        // Handle invalid link
+                        alertMessage = "Invalid Spotify link."
+                    } else {
+                        // Handle other errors
+                        alertMessage = "An error occurred."
+                    }
 
-
-    
-    
-    
-    struct PlaylistsView: View {
-       
-        @State private var showRecommendations = false
-        @State private var showRecommendations2 = false
-        var body: some View {
-            VStack(spacing: 10) {
-                HStack {
-                    Text("Your")
-                        .font(.largeTitle)
-                        .bold()
-                        .foregroundColor(.black)
-                    
-                    Text("Music")
-                        .font(Font.system(size: 36, design: .rounded))
-                        .bold()
-                        .foregroundColor(.pink)
+                    showAlert = true
                 }
-                
-                Button(action: {
-                               showRecommendations = true
-                           }) {
-                               Text("Fav Genre Recommendations")
-                                   .font(.headline)
-                                   .foregroundColor(.white)
-                                   .padding()
-                                   .background(Color.pink)
-                                   .cornerRadius(10)
-                           }
-                Button(action: {
-                               showRecommendations2 = true
-                           }) {
-                               Text("Energic Recommendations")
-                                   .font(.headline)
-                                   .foregroundColor(.white)
-                                   .padding()
-                                   .background(Color.pink)
-                                   .cornerRadius(10)
-                           }
-                
-                Button(action: {
-                    // Action for "Your Playlists" button
-                }) {
-                    Text("Your Playlists")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color.pink)
-                        .cornerRadius(10)
-                }
-                
-                NavigationLink(destination: RecommendationView(), isActive: $showRecommendations) {
-                                EmptyView()
-                            }.hidden()
-                NavigationLink(destination: EnergyDanceabilityRecommendationView(), isActive: $showRecommendations2) {
-                                EmptyView()
-                            }.hidden()
-                
-                Spacer()
-            }
-            .padding() // Adjust padding if needed
-            .background(
-                Rectangle()
-                    .fill(Color.pink.opacity(0.2))
-                    .cornerRadius(20)
-                // Adjust the size as per your requirements
-                    .frame(width: 500, height: 700)
-            )
+            }.resume()
         }
     }
+
+
+    struct PlaylistsView: View {
+        // Define a two-column grid layout
+        private var gridItems = [GridItem(.flexible()), GridItem(.flexible())]
+
+        var body: some View {
+            NavigationView {
+                ScrollView {
+                    LazyVGrid(columns: gridItems, spacing: 20) {
+                        NavigationLink(destination: RecommendationView()) {
+                            RecommendationButtonLabel("Fav Genre Recommendations")
+                        }
+                        NavigationLink(destination: EnergyDanceabilityRecommendationView()) {
+                            RecommendationButtonLabel("Your Energy & Dance Vibes")
+                        }
+                        NavigationLink(destination: MoodyMix()) {
+                            RecommendationButtonLabel("A Moody Mix\nFor You")
+                        }
+                        NavigationLink(destination: EnergeticMix()) {
+                            RecommendationButtonLabel("An Energetic Mix For You")
+                        }
+                    }
+                    .padding()
+                }
+                .navigationTitle("Your Music")
+                .background(Color.pink.opacity(0.2))
+            }
+        }
+
+        private func RecommendationButtonLabel(_ title: String) -> some View {
+            Text(title)
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 120, maxHeight: .infinity)
+                .background(Color.pink)
+                .cornerRadius(10)
+        }
+    }
+
+
     
     
     struct FriendsView: View {
