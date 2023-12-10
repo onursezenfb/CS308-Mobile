@@ -981,148 +981,137 @@ struct ContentView: View {
         
         var body: some View {
             NavigationView {
-                ScrollView {
-                    VStack {
-                        VStack(alignment: .leading, spacing: 0) {
-                            HStack {
-                                Text("Your Personal")
-                                    .font(.largeTitle)
-                                    .bold()
-                                    .foregroundColor(.black)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.horizontal)
-                                Spacer()
-                                
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .foregroundColor(Color.pink.opacity(0.7))
-                                        .frame(width: 40, height: 40)
-                                    Button(action: {
-                                        showingSettings.toggle()
-                                    }) {
-                                        Image(systemName: "gear")
-                                            .font(.title)
-                                            .foregroundColor(.white)
-                                    }
-                                }
-                                .padding(.trailing, 20)
-                                .sheet(isPresented: $showingSettings) {
-                                    SettingsView(profileImage: $profileImage) // Show the settings view when the button is tapped
-                                }
-                            }
+                VStack {
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack {
+                            Text("Your Personal")
+                                .font(.largeTitle)
+                                .bold()
+                                .foregroundColor(.black)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal)
+                            Spacer()
                             
-                      
-                            HStack {
-                                Text("Music Tailor")
-                                    .font(Font.system(size: 32, design: .rounded))
-                                    .bold()
-                                    .foregroundColor(.pink)
-                                    .padding(.leading, 20)
-                                VStack {
-                                    Text("Profile")
-                                        .font(.custom("Arial-BoldMT", size: 30))
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.black)
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .foregroundColor(Color.pink.opacity(0.7))
+                                    .frame(width: 40, height: 40)
+                                Button(action: {
+                                    showingSettings.toggle()
+                                }) {
+                                    Image(systemName: "gear")
+                                        .font(.title)
+                                        .foregroundColor(.white)
                                 }
-                                Spacer()
+                            }
+                            .padding(.trailing, 20)
+                            .sheet(isPresented: $showingSettings) {
+                                SettingsView(profileImage: $profileImage) // Show the settings view when the button is tapped
                             }
                         }
-                        //.background(Color.pink.opacity(0.15))
-                       
                         
-                         if let image = selectedImage ?? profileImage {
-                            Image(uiImage: image)
-                                .resizable()
-                                .frame(width: 120, height: 120)
-                                .clipShape(Circle())
-                                .overlay(Circle().stroke(Color.white, lineWidth: 4))
-                                .shadow(radius: 7)
-                        } else {
-                            Image(systemName: "person")
-                                .padding(.top, 50)
-                                .font(.system(size: 120))
-                                .foregroundColor(Color.pink.opacity(0.15))
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 120, height: 120)
-                                .clipShape(Circle())
-                                .overlay(Circle().stroke(Color.white, lineWidth: 4))
-                                .shadow(radius: 7)
-                                .padding(.top, 30)
+                  
+                        HStack {
+                            Text("Music Tailor")
+                                .font(Font.system(size: 32, design: .rounded))
+                                .bold()
+                                .foregroundColor(.pink)
+                                .padding(.leading, 20)
+                            VStack {
+                                Text("Profile")
+                                    .font(.custom("Arial-BoldMT", size: 30))
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.black)
+                            }
+                            Spacer()
                         }
-                        
-                        // User's name and username
-                        Text("\(userSession.name ?? "") \(userSession.surname ?? "")")
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .padding(.top, 10)
-                            .padding(.bottom, 1)
-                        
-                        Text("@\(userSession.username ?? "")")
-                            .foregroundColor(.pink)
-                        
-                        Spacer()
-                        
-                        // Description text
-                        Text("This is a brief description about yourself. You can customize it based on your preferences.")
-                            .font(.custom("Avenir Next", size: 18))
-                            .italic()
-                            .padding(.horizontal, 20)
-                            .multilineTextAlignment(.center)
-                        
-                        Spacer()
-
-
-                        // Editable user information fields
-                        Group {
-                            TextField("Email", text: $email)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .padding(.horizontal, 20)
-                            DatePicker("Date of Birth", selection: $dateOfBirth, displayedComponents: .date)
-                                .padding()
-                                .padding(.horizontal, 20)
-                            TextField("Language", text: $language)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .padding(.horizontal, 20)
-                            TextField("Subscription", text: $subscription)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .padding(.horizontal, 20)
-                            TextField("Rate Limit", text: $rateLimit)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .padding(.horizontal, 20)
-                        }
-                        .padding()
-
-                        Spacer()
-                        
-                        // Update Button
-                        Button(action: updateUserInformation) {
-                            Text("Update")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.pink)
-                                .cornerRadius(10)
-                        }
-                        .padding(.horizontal)
                     }
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 10)
+                    .background(Color.pink.opacity(0.15))
+                   
                     
-                }
-                .navigationBarItems(trailing: Button(action: {
-                    showingSettings.toggle()
-                        
-                }) {
-                    Image(systemName: "gear")
+                     if let image = selectedImage ?? profileImage {
+                        Image(uiImage: image)
+                            .resizable()
+                            .frame(width: 120, height: 120)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                            .shadow(radius: 7)
+                    } else {
+                        Image(systemName: "person")
+                            .padding(.top, 50)
+                            .font(.system(size: 120))
+                            .foregroundColor(Color.pink.opacity(0.15))
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 120, height: 120)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                            .shadow(radius: 7)
+                            .padding(.top, 30)
+                    }
+                    
+                    // User's name and username
+                    Text("\(userSession.name ?? "") \(userSession.surname ?? "")")
                         .font(.title)
-                        .foregroundColor(.white)
-                })
-                .navigationBarTitleDisplayMode(.inline)
-                .sheet(isPresented: $showingSettings) {
-                    // Replace with your actual SettingsView initialization
-                    Text("Settings View")
+                        .fontWeight(.bold)
+                        .padding(.top, 10)
+                        .padding(.bottom, 1)
+                    
+                    Text("@\(userSession.username ?? "")")
+                        .foregroundColor(.pink)
+                    
+                    
+                    // Description text
+//                    Text("This is a brief description about yourself. You can customize it based on your preferences.")
+//                        .font(.custom("Avenir Next", size: 18))
+//                        .italic()
+//                        .padding(.horizontal, 20)
+//                        .multilineTextAlignment(.center)
+//                    
+
+
+                    // Editable user information fields
+                    Group {
+                        TextField("Email", text: $email)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, -10)
+                        DatePicker("Date of Birth", selection: $dateOfBirth, displayedComponents: .date)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, -10)
+                        TextField("Language", text: $language)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, -10)
+                        TextField("Subscription", text: $subscription)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, -10)
+                        TextField("Rate Limit", text: $rateLimit)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, -10)
+                    }
+                    .padding()
+
+                    Spacer()
+                    
+                    // Update Button
+                    Button(action: updateUserInformation) {
+                        Text("Update")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.pink)
+                            .cornerRadius(10)
+                    }
+                    .padding(.horizontal)
+                    
+                    Spacer()
                 }
-                .onAppear(perform: fetchUserData)
+                .padding(.bottom, 20)
+                
             }
         }
         
