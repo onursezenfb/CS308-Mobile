@@ -853,18 +853,48 @@ struct ContentView: View {
             NavigationView {
                 ScrollView {
                     // Title HStack
-                    HStack {
-                        Text("Your")
-                            .font(.largeTitle)
-                            .bold()
-                            .foregroundColor(.black)
-                        
-                        Text("Music")
-                            .font(Font.system(size: 36, design: .rounded))
-                            .bold()
-                            .foregroundColor(.pink)
+                    VStack {
+                        HStack {
+                            Text("Your")
+                                .font(.largeTitle)
+                                .bold()
+                                .foregroundColor(.black)
+                            
+                            Text("Music")
+                                .font(Font.system(size: 36, design: .rounded))
+                                .bold()
+                                .foregroundColor(.pink)
+                        }
+                        .padding(.bottom, 5) // Add some top padding to the title
+                        HStack {
+                            Text("Recommendations &")
+                                .font(.custom("Arial-BoldMT", size: 25))
+                                .bold()
+                                .foregroundColor(.clear)
+                                .background(
+                                    LinearGradient(gradient: Gradient(colors: [Color.pink, Color.orange]), startPoint: .leading, endPoint: .trailing)
+                                )
+                                .mask(
+                                    Text("Recommendations &")
+                                        .font(.custom("Arial-BoldMT", size: 25))
+                                        .bold()
+                                )
+
+                            Text("Analysis")
+                                .font(.custom("Arial-BoldMT", size: 25))
+                                .bold()
+                                .foregroundColor(.clear)
+                                .background(
+                                    LinearGradient(gradient: Gradient(colors: [Color.blue, Color.green]), startPoint: .leading, endPoint: .trailing)
+                                )
+                                .mask(
+                                    Text("Analysis")
+                                        .font(.custom("Arial-BoldMT", size: 25))
+                                        .bold()
+                                )
+                        }
                     }
-                    .padding(.top, 20) // Add some top padding to the title
+                    .padding(.top, 15) // Add some top padding to the title
                     
                     // Buttons grid
                     LazyVGrid(columns: gridItems, spacing: 20) {
@@ -879,6 +909,18 @@ struct ContentView: View {
                         }
                         NavigationLink(destination: EnergeticMix()) {
                             RecommendationButtonLabel("Energetic Mix For You")
+                        }
+                        NavigationLink(destination: RatingsLineChartView()) {
+                            AnalysisButtonLabel("Your Daily Average Ratings")
+                        }
+                        NavigationLink(destination: TopAlbumsAnalysisView()) {
+                            AnalysisButtonLabel("Your Top Albums by Era")
+                        }
+                        NavigationLink(destination: FavoriteSongsAnalysisView()) {
+                            AnalysisButtonLabel("Your Favorite Songs")
+                        }
+                        NavigationLink(destination: ArtistAnalysisView()) {
+                            AnalysisButtonLabel("Compare Artist by Ratings")
                         }
                     }
                     .padding() // Add padding around the grid
@@ -897,7 +939,20 @@ struct ContentView: View {
                 .multilineTextAlignment(.center) // Ensure the text is centered
                 .padding() // Add padding inside the button
                 .frame(minWidth: 0, maxWidth: .infinity, minHeight: 120) // Set a minimum height for buttons
-                .background(LinearGradient(gradient: Gradient(colors: [.pink, .red]), startPoint: .topLeading, endPoint: .bottomTrailing)) // Gradient background
+                .background(LinearGradient(gradient: Gradient(colors: [.pink, .yellow]), startPoint: .topLeading, endPoint: .bottomTrailing)) // Gradient background
+                .cornerRadius(15) // Rounded corners
+                .shadow(radius: 5) // Add a shadow for a 3D effect
+        }
+        
+        // Custom view for the button label
+        private func AnalysisButtonLabel(_ title: String) -> some View {
+            Text(title)
+                .fontWeight(.medium)
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center) // Ensure the text is centered
+                .padding() // Add padding inside the button
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 120) // Set a minimum height for buttons
+                .background(LinearGradient(gradient: Gradient(colors: [.green, .blue]), startPoint: .topLeading, endPoint: .bottomTrailing)) // Gradient background
                 .cornerRadius(15) // Rounded corners
                 .shadow(radius: 5) // Add a shadow for a 3D effect
         }
@@ -1111,6 +1166,7 @@ struct ContentView: View {
                     Spacer()
                 }
                 .padding(.bottom, 20)
+                .onAppear(perform: fetchUserData)
                 
             }
         }
@@ -1153,15 +1209,18 @@ struct ContentView: View {
         }
 
         private func updateUserData(with data: [String: Any]) {
-            email = data["email"] as? String ?? ""
-            language = data["language"] as? String ?? ""
-            subscription = data["subscription"] as? String ?? ""
-            rateLimit = data["rate_limit"] as? String ?? ""
+            DispatchQueue.main.async {
+                self.email = data["email"] as? String ?? ""
+                self.language = data["language"] as? String ?? ""
+                self.subscription = data["subscription"] as? String ?? ""
+                self.rateLimit = data["rate_limit"] as? String ?? ""
 
-            if let dobString = data["date_of_birth"] as? String, let dob = dateFormatter.date(from: dobString) {
-                dateOfBirth = dob
+                if let dobString = data["date_of_birth"] as? String, let dob = self.dateFormatter.date(from: dobString) {
+                    self.dateOfBirth = dob
+                }
             }
         }
+
         
         private func updateUserInformation() {
             guard let url = URL(string: "http://127.0.0.1:8000/api/users/update") else {
