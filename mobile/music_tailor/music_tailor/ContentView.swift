@@ -6,7 +6,7 @@ enum ItemType {
 struct ContentView: View {
     @EnvironmentObject var userSession: UserSession
     @State private var selectedTab: Int = 0
-    
+
     
     
     var body: some View {
@@ -55,8 +55,162 @@ struct ContentView: View {
             }
     }
     
-   
+    struct DetailedSong: Decodable {
+        var song_id: String
+        var name: String
+        var album_id: String
+        var duration: Int?
+        var tempo: String?
+        var key: String?
+        var lyrics: String?
+        var mode: String?
+        var explicit: Int?
+        var danceability: String?
+        var energy: String?
+        var loudness: String?
+        var speechiness: String?
+        var instrumentalness: String?
+        var liveness: String?
+        var valence: String?
+        var time_signature: String?
+        
+        // Add other properties as needed
+    }
+    
+    
+    struct DetailedPerformer: Decodable {
+        var artist_id: String
+        var name: String
+        var genre: String?  // Changed to String
+        var popularity: Int?
+        var image_url: String
+    }
 
+    struct PerformerView: View {
+        var artistId: String
+        @State private var performer: DetailedPerformer?
+        
+        var body: some View {
+            Group {
+                VStack(alignment: .leading, spacing: 10) {
+                    AsyncImage(url: URL(string: performer!.image_url)) { image in
+                        image.resizable()
+                    } placeholder: {
+                        ProgressView()
+                    }
+                    .frame(width: 100, height: 100)
+                    
+                    Text(performer!.name)
+                        .font(.title)
+                    
+                    if let popularity = performer?.popularity {
+                        Text("Popularity: \(popularity)")
+                    }
+                    
+                    if let genre = performer?.genre {
+                        Text("Genres: \(genre)") // Use genre directly as it is now a String
+                    }
+                    
+                }
+                
+            }
+            .onAppear {
+                fetchPerformerDetails()
+            }
+        }
+        
+        private func fetchPerformerDetails() {
+            guard let url = URL(string: "http://127.0.0.1:8000/api/performers/\(artistId)") else {
+                print("Invalid URL")
+                return
+            }
+            
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    print("Error fetching data: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse,
+                      (200...299).contains(httpResponse.statusCode) else {
+                    print("Server error: \(response.debugDescription)")
+                    return
+                }
+                
+                if let data = data {
+                    do {
+                        var decodedResponse = try JSONDecoder().decode(DetailedPerformer.self, from: data)
+                        
+                        // Convert the genre string to an array
+                        if let genreString = decodedResponse.genre,
+                           let data = genreString.data(using: .utf8),
+                           let jsonArray = try? JSONSerialization.jsonObject(with: data) as? [String] {
+                            decodedResponse.genre = jsonArray.joined(separator: ", ")
+                        }
+                        
+                        DispatchQueue.main.async {
+                            self.performer = decodedResponse
+                        }
+                    } catch {
+                        print("Decoding error: \(error.localizedDescription)")
+                        print(String(data: data, encoding: .utf8) ?? "No data string")
+                    }
+                }
+            }
+        }
+    }
+
+/*
+    struct SongView: View {
+        var songId: String
+        @State private var song: DetailedSong?
+
+        var body: some View {
+            Group {
+                if let song = song {
+                    let album = albums.first(where: { $0.album_id == song.album_id })
+                    let performer = album.flatMap { alb in
+                        performers.first(where: { $0.artist_id == alb.artist_id })
+                    }
+             
+                    VStack(alignment: .leading, spacing: 10) {
+                        AsyncImage(url: URL(string: album.albumImageUrl)) { image in
+                            image.resizable()
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .frame(width: 100, height: 100)
+                        
+                        Text(song.name)
+                            .font(.title)
+                        // ... other song details ...
+                    }
+                } else {
+                    Text("Loading...")
+                }
+            }
+            .onAppear {
+                fetchSongDetails()
+            }
+        }
+
+        private func fetchSongDetails() {
+            guard let url = URL(string: "http://127.0.0.1:8000/api/songs/\(songId)") else { return }
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let data = data {
+                    if let decodedResponse = try? JSONDecoder().decode(Song.self, from: data) {
+                        DispatchQueue.main.async {
+                            self.song = decodedResponse
+                        }
+                    }
+                }
+            }.resume()
+        }
+    }
+
+*/
+    
+    
 
     struct RatingSheetView: View {
         @Environment(\.presentationMode) var presentationMode
@@ -65,6 +219,9 @@ struct ContentView: View {
         @State private var selectedRating: Int?
         @State private var errorMessage: String?
         @EnvironmentObject var userSession: UserSession
+
+
+        
         private var ratingTitle: String {
                 switch itemType {
                 case .song:
@@ -80,6 +237,8 @@ struct ContentView: View {
             dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss" // Adjust the format to match your backend expectation
             return dateFormatter.string(from: Date())
         }
+        
+        
         var body: some View {
             NavigationView {
                 VStack {
@@ -176,13 +335,18 @@ struct ContentView: View {
     struct HomeView: View {
         @State private var searchText: String = ""
         @State private var currentFilter: Filter = .all // Default filter is "All"
-        @State private var showingRatingSheet = false
+        @State private var showingSongSheet = false
+        @State private var showingAlbumSheet = false
+        @State private var showingPerformerSheet = false
         @State private var currentItemID: String?
         @State private var currentItemType: ItemType?
         @State private var albums: [Album] = []
         @State private var songs: [Song] = []
         @State private var performers: [Performer] = []
-        
+        @State private var tempalbums: [Album] = []
+        @State private var tempsongs: [Song] = []
+        @State private var tempperformers: [Performer] = []
+
         enum Filter: String, CaseIterable {
             case all = "All"
             case songs = "Songs"
@@ -210,6 +374,7 @@ struct ContentView: View {
                                 fetchSearchResults()
                             })
                     }
+                    
                     
                     
                     
@@ -244,6 +409,7 @@ struct ContentView: View {
                                 }
                                 .cornerRadius(8) // Add corner radius to the image
                                 
+                                
                                 Spacer().frame(width: 15)
                                 VStack(alignment: .leading) {
                                     Text(item.name)
@@ -252,32 +418,89 @@ struct ContentView: View {
                                         .foregroundColor(.gray)
                                 }
                                 Button(action: {
-                                        currentItemID = item.id
-                                        currentItemType = item.itemType  // Set the item type
-                                        showingRatingSheet = true
-                                    }) {
-                                                            Image(systemName: "star.fill") // Or any other icon or text you prefer
-                                                                .foregroundColor(.yellow)
-                                                        }
+                                    currentItemID = item.id
+                                    currentItemType = item.itemType  // Set the item type
+                                    switch currentItemType {
+                                    case .performer:
+                                        showingPerformerSheet = true
+                                    case .album:
+                                        showingAlbumSheet = true
+                                    case .song:
+                                        showingSongSheet = true
+                                    default:
+                                        break // In case currentItemType is nil
+                                    }
+                                }) {
+                                    Image(systemName: "star.fill") // Or any other icon or text you prefer
+                                        .foregroundColor(.yellow)
+                                }
                             }
                         }
                     }
-                    .sheet(isPresented: $showingRatingSheet) {
+                    .sheet(isPresented: $showingSongSheet) {
                         if let itemType = currentItemType, let itemID = currentItemID {
-                            RatingSheetView(itemID: itemID, itemType: itemType)
+                            
                         }
                     }
-
-            }
+                    .sheet(isPresented: $showingPerformerSheet) {
+                        if let itemType = currentItemType, let itemID = currentItemID {
+                            PerformerView(artistId: currentItemID ?? "000")
+                        }
+                    }
+                    .sheet(isPresented: $showingAlbumSheet) {
+                        if let itemType = currentItemType, let itemID = currentItemID {
+                            
+                        }
+                    }
+                    
+                }
                 .padding()
                 .background(Color.white.opacity(0.8))
                 .cornerRadius(0)
             }
             .onAppear {
-                fetchSearchResults()
+                fetchAllPerformers()
+                fetchAllAlbums()
             }
             
         }
+        private func fetchAllPerformers() {
+            guard let url = URL(string: "http://127.0.0.1:8000/api/performers") else { return }
+            
+            let task = URLSession.shared.dataTask(with: url) { data, response, error in
+                if let data = data {
+                    DispatchQueue.main.async {
+                        do {
+                            let fetchedPerformers = try JSONDecoder().decode([Performer].self, from: data)
+                            self.performers = fetchedPerformers
+                        } catch {
+                            print("Error fetching performers: \(error)")
+                        }
+                    }
+                }
+            }
+            task.resume()
+        }
+        
+        private func fetchAllAlbums() {
+            guard let url = URL(string: "http://127.0.0.1:8000/api/albums") else { return }
+            
+            let task = URLSession.shared.dataTask(with: url) { data, response, error in
+                if let data = data {
+                    DispatchQueue.main.async {
+                        do {
+                            let fetchedAlbums = try JSONDecoder().decode([Album].self, from: data)
+                            self.albums = fetchedAlbums
+                        } catch {
+                            print("Error fetching albums: \(error)")
+                        }
+                    }
+                }
+            }
+            task.resume()
+        }
+        
+        @State private var combinedResults: [SearchResult] = []
         
         private func fetchSearchResults() {
             // Base URL for the search API
@@ -298,45 +521,45 @@ struct ContentView: View {
             }
             
             let task = URLSession.shared.dataTask(with: endpointURL) { data, response, error in
-                    if let data = data {
-                        DispatchQueue.main.async {
-                            switch currentFilter {
-                            case .performers:
-                                do {
-                                    self.performers = try JSONDecoder().decode([Performer].self, from: data)
-                                } catch {
-                                    print("Error decoding performers JSON: \(error)")
+                if let error = error {
+                   print("Error fetching data: \(error)")
+                   return
+               }
+                if let data = data {
+                    DispatchQueue.main.async {
+                        switch currentFilter {
+                        case .performers:
+                            do {
+                                self.tempperformers = try JSONDecoder().decode([Performer].self, from: data)
+                            } catch {
+                                print("Error decoding performers JSON: \(error)")
+                            }
+                        case .songs:
+                            do {
+                                self.songs = try JSONDecoder().decode([Song].self, from: data)
+                            } catch {
+                                print("Error decoding songs JSON: \(error)")
+                                if let dataString = String(data: data, encoding: .utf8) {
+                                    print("Received song data: \(dataString)")
                                 }
-                            case .songs:
-                                do {
-                                    self.songs = try JSONDecoder().decode([Song].self, from: data)
-                                    print("Songs fetched successfully. Count: \(self.songs.count)")
-                                } catch {
-                                    print("Error decoding songs JSON: \(error)")
-                                    if let dataString = String(data: data, encoding: .utf8) {
-                                        print("Received song data: \(dataString)")
-                                    }
-                                }
-
-                            case .albums:
-                                do {
-                                    self.albums = try JSONDecoder().decode([Album].self, from: data)
-                                } catch {
-                                    print("Error decoding albums JSON: \(error)")
-                                }
-                            case .all:
-                                do {
-                                    let response = try JSONDecoder().decode(CombinedResponse.self, from: data)
-                                    self.performers = response.performers ?? []
-                                    self.songs = response.songs ?? []
-                                    self.albums = response.albums ?? []
-                                } catch {
-                                    print("Error decoding combined JSON: \(error)")
-                                }
+                            }
+                            
+                        case .albums:
+                            do {
+                                self.tempalbums = try JSONDecoder().decode([Album].self, from: data)
+                            } catch {
+                                print("Error decoding albums JSON: \(error)")
+                            }
+                        case .all:
+                            do {
+                                combinedResults = try JSONDecoder().decode([SearchResult].self, from: data)
+                            } catch {
+                                print("Error decoding combined JSON: \(error)")
                             }
                         }
                     }
                 }
+            }
             
             // Start URLSession task
             task.resume()
@@ -344,41 +567,41 @@ struct ContentView: View {
         
         private func filteredItems() -> [FilterItem] {
             var items: [FilterItem] = []
-
+            
             switch currentFilter {
-            case .songs:
-                items = songs.map { song in
-                    let album = albums.first(where: { $0.album_id == song.album_id })
-                    let performer = album.flatMap { alb in
-                        performers.first(where: { $0.artist_id == alb.artist_id })
+                case .songs:
+                    items = songs.map { song in
+                        let album = albums.first(where: { $0.album_id == song.album_id })
+                        let performer = album.flatMap { alb in
+                            performers.first(where: { $0.artist_id == alb.artist_id })
+                        }
+                        
+                        return FilterItem(
+                            id: song.song_id,
+                            name: song.name,
+                            identifier: "Song - \(performer?.name ?? "Unknown Performer")",
+                            imageUrl: album?.image_url ?? "default_image_url",
+                            itemType: .song
+                        )
                     }
-
-                    return FilterItem(
-                        id: song.song_id,
-                        name: song.name,
-                        identifier: "Song - \(performer?.name ?? "Unknown Performer")",
-                        imageUrl: album?.image_url ?? "default_image_url",
-                        itemType: .song
-                    )
-                }
-
-            case .albums:
-                items = albums.map { album in
-                    let performer = performers.first(where: { $0.artist_id == album.artist_id })
-
-                    return FilterItem(
-                        id: album.album_id,
-                        name: album.name,
-                        identifier: "Album - \(performer?.name ?? "Unknown Performer")",
-                        imageUrl: album.image_url,
-                        itemType: .album
-                    )
-                }
-            case .performers:
-                items = performers.map { performer in
-                    FilterItem(id: performer.artist_id, name: performer.name, identifier: "Performer", imageUrl: performer.image_url,itemType: .performer)
-                }
-            case .all:
+                    
+                case .albums:
+                    items = tempalbums.map { album in
+                        let performer = performers.first(where: { $0.artist_id == album.artist_id })
+                        
+                        return FilterItem(
+                            id: album.album_id,
+                            name: album.name,
+                            identifier: "Album - \(performer?.name ?? "Unknown Performer")",
+                            imageUrl: album.image_url,
+                            itemType: .album
+                        )
+                    }
+                case .performers:
+                    items = tempperformers.map { performer in
+                        FilterItem(id: performer.artist_id, name: performer.name, identifier: "Performer", imageUrl: performer.image_url,itemType: .performer)
+                    }
+            default:
                 break
             }
             
@@ -404,53 +627,91 @@ struct ContentView: View {
             self.itemType = itemType
         }
     }
-    struct CombinedResponse: Decodable {
-        var performers: [Performer]?
-        var songs: [Song]?
-        var albums: [Album]?
-    }
-
     
-    
-    struct Album: Identifiable, Decodable {
+    struct AlbumSearchResult: Decodable {
         var album_id: String
         var name: String
         var image_url: String
         var artist_id: String
-        // Add other album properties as needed
-        
-        // Conform to Identifiable by providing a unique identifier
-        var id: String { album_id }
+        // Add other album-specific fields...
     }
+
+    struct SongSearchResult: Decodable {
+        var song_id: String
+        var name: String
+        var album_id: String
+        var firstPerformerId: String?
+
+        private enum CodingKeys: String, CodingKey {
+            case song_id, name, album_id, performers
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            song_id = try container.decode(String.self, forKey: .song_id)
+            name = try container.decode(String.self, forKey: .name)
+            album_id = try container.decode(String.self, forKey: .album_id)
+
+            // Decode the performers array and extract the first element
+            let performerIds = try container.decode([String].self, forKey: .performers)
+            firstPerformerId = performerIds.first
+        }
+    }
+
+
+    struct PerformerSearchResult: Decodable {
+        var artist_id: String
+        var name: String
+        var image_url: String
+        // Add other performer-specific fields...
+    }
+
+
+    
+    struct SearchResult: Decodable {
+        var search_type: String
+        var album: AlbumSearchResult?
+        var song: SongSearchResult?
+        var performer: PerformerSearchResult?
+
+        enum CodingKeys: String, CodingKey {
+            case search_type
+            case album = "album_id"
+            case song = "song_id"
+            case performer = "artist_id"
+        }
+    }
+
+
+    
     
     struct Song: Identifiable, Decodable {
         var song_id: String
         var name: String
         var album_id: String
-        var rating: Double?
-        // Add image_url property
-        // Add other song properties as needed
-        
-        // Conform to Identifiable by providing a unique identifier
+//        var image_url: String
+        // Add other properties as needed
         var id: String { song_id }
     }
-    
+
+    struct Album: Identifiable, Decodable {
+        var album_id: String
+        var name: String
+        var image_url: String
+        var artist_id: String
+        // Add other properties as needed
+        var id: String { album_id }
+    }
+
     struct Performer: Identifiable, Decodable {
         var artist_id: String
         var name: String
-        var image_url: String // Add image_url property
-        // Add other performer properties as needed
-        
-        // Conform to Identifiable by providing a unique identifier
+        var image_url: String
+        // Add other properties as needed
         var id: String { artist_id }
     }
-    
-    
-    struct Response<T: Decodable>: Decodable {
-        var data: [String: T]
-    }
 
-    
+
     
     
     struct UploadMusicFormView: View {

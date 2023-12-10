@@ -1,10 +1,3 @@
-//
-//  ObservableObject.swift
-//  music_tailor
-//
-//  Created by Şimal on 4.12.2023.
-//
-
 import Foundation
 import SwiftUI
 class UserSession: ObservableObject {
