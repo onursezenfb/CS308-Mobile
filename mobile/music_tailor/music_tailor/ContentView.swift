@@ -933,7 +933,7 @@ struct ContentView: View {
                                 .foregroundColor(.white)
                                 .padding()
                                 .frame(minWidth: 0, maxWidth: .infinity)
-                                .background(Color.pink)
+                                .background(LinearGradient(gradient: Gradient(colors: [.pink, .red]), startPoint: .topLeading, endPoint: .bottomTrailing))
                                 .cornerRadius(10)
                         }
                         .padding(.bottom, 10)
@@ -946,7 +946,7 @@ struct ContentView: View {
                                 .foregroundColor(.white)
                                 .padding()
                                 .frame(minWidth: 0, maxWidth: .infinity)
-                                .background(Color.pink)
+                                .background(LinearGradient(gradient: Gradient(colors: [.pink, .red]), startPoint: .topLeading, endPoint: .bottomTrailing))
                                 .cornerRadius(10)
                         }
                         
@@ -964,42 +964,54 @@ struct ContentView: View {
     
     struct ProfileView: View {
         @EnvironmentObject var userSession: UserSession
-        
         @State private var profileImage: UIImage? = nil
-        @State private var selectedImage: UIImage? // Add this line
-        @State private var showingSettings = false // Added state for showing settings
+        @State private var selectedImage: UIImage?
+        @State private var showingSettings = false
+        @State private var email: String = ""
+        @State private var dateOfBirth: Date = Date()
+        @State private var language: String = ""
+        @State private var subscription: String = ""
+        @State private var rateLimit: String = ""
+        
+        private let dateFormatter: DateFormatter = {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            return formatter
+        }()
         
         var body: some View {
             NavigationView {
-                VStack {
-                    VStack(spacing: 0) { // Set spacing to 0 to remove the space between text elements
-                        HStack {
-                            Text("Your Personal")
-                                .font(.custom("Arial-BoldMT", size: 30))
-                                .fontWeight(.bold)
-                                .foregroundColor(.black)
-                                .padding(.leading, 20)
-                            Spacer()
-                            
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .foregroundColor(Color.pink.opacity(0.7))
-                                    .frame(width: 40, height: 40)
-                                Button(action: {
-                                    showingSettings.toggle()
-                                }) {
-                                    Image(systemName: "gear")
-                                        .font(.title)
-                                        .foregroundColor(.white)
+                ScrollView {
+                    VStack {
+                        VStack(alignment: .leading, spacing: 0) {
+                            HStack {
+                                Text("Your Personal")
+                                    .font(.largeTitle)
+                                    .bold()
+                                    .foregroundColor(.black)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal)
+                                Spacer()
+                                
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .foregroundColor(Color.pink.opacity(0.7))
+                                        .frame(width: 40, height: 40)
+                                    Button(action: {
+                                        showingSettings.toggle()
+                                    }) {
+                                        Image(systemName: "gear")
+                                            .font(.title)
+                                            .foregroundColor(.white)
+                                    }
+                                }
+                                .padding(.trailing, 20)
+                                .sheet(isPresented: $showingSettings) {
+                                    SettingsView(profileImage: $profileImage) // Show the settings view when the button is tapped
                                 }
                             }
-                            .padding(.trailing, 20)
-                            .sheet(isPresented: $showingSettings) {
-                                SettingsView(profileImage: $profileImage) // Show the settings view when the button is tapped
-                            }
-                        }
-                        
-                        VStack {
+                            
+                      
                             HStack {
                                 Text("Music Tailor")
                                     .font(Font.system(size: 32, design: .rounded))
@@ -1015,59 +1027,222 @@ struct ContentView: View {
                                 Spacer()
                             }
                         }
-                    }
-                    .background(Color.pink.opacity(0.15))
-                    
-                    
-                    
-                    
-                    
-                    if let image = selectedImage ?? profileImage {
-                        Image(uiImage: image)
-                            .resizable()
-                            .frame(width: 120, height: 120)
-                            .clipShape(Circle())
-                            .overlay(Circle().stroke(Color.white, lineWidth: 4))
-                            .shadow(radius: 7)
-                    } else {
-                        Image(systemName: "person")
-                            .padding(.top, 50)
-                            .font(.system(size: 120))
-                            .foregroundColor(Color.pink.opacity(0.15))
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 120, height: 120)
-                            .clipShape(Circle())
-                            .overlay(Circle().stroke(Color.white, lineWidth: 4))
-                            .shadow(radius: 7)
-                            .padding(.top, 30)
-                    }
-                    
-                    Text("\(userSession.name ?? "") \(userSession.surname ?? "")")
+                        //.background(Color.pink.opacity(0.15))
+                       
+                        
+                         if let image = selectedImage ?? profileImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .frame(width: 120, height: 120)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                                .shadow(radius: 7)
+                        } else {
+                            Image(systemName: "person")
+                                .padding(.top, 50)
+                                .font(.system(size: 120))
+                                .foregroundColor(Color.pink.opacity(0.15))
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 120, height: 120)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                                .shadow(radius: 7)
+                                .padding(.top, 30)
+                        }
+                        
+                        // User's name and username
+                        Text("\(userSession.name ?? "") \(userSession.surname ?? "")")
                             .font(.title)
                             .fontWeight(.bold)
                             .padding(.top, 10)
                             .padding(.bottom, 1)
-
+                        
                         Text("@\(userSession.username ?? "")")
-                            .foregroundColor(.gray)
+                            .foregroundColor(.pink)
+                        
+                        Spacer()
+                        
+                        // Description text
+                        Text("This is a brief description about yourself. You can customize it based on your preferences.")
+                            .font(.custom("Avenir Next", size: 18))
+                            .italic()
+                            .padding(.horizontal, 20)
+                            .multilineTextAlignment(.center)
+                        
+                        Spacer()
+
+
+                        // Editable user information fields
+                        Group {
+                            TextField("Email", text: $email)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .padding(.horizontal, 20)
+                            DatePicker("Date of Birth", selection: $dateOfBirth, displayedComponents: .date)
+                                .padding()
+                                .padding(.horizontal, 20)
+                            TextField("Language", text: $language)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .padding(.horizontal, 20)
+                            TextField("Subscription", text: $subscription)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .padding(.horizontal, 20)
+                            TextField("Rate Limit", text: $rateLimit)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .padding(.horizontal, 20)
+                        }
+                        .padding()
+
+                        Spacer()
+                        
+                        // Update Button
+                        Button(action: updateUserInformation) {
+                            Text("Update")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.pink)
+                                .cornerRadius(10)
+                        }
+                        .padding(.horizontal)
+                    }
+                    .padding(.bottom, 20)
                     
-                    Divider()
-                        .background(Color.pink.opacity(0.15)) // Set background color of the part divided by the divider to pink
-                        .padding(.vertical, 20)
-                    
-                    Text("This is a brief description about yourself. You can customize it based on your preferences.")
-                        .font(.custom("Avenir Next", size: 18))
-                        .italic()
-                        .padding(.horizontal, 20)
-                        .multilineTextAlignment(.center)
-                    
-                    
-                    Spacer()
+                }
+                .navigationBarItems(trailing: Button(action: {
+                    showingSettings.toggle()
+                        
+                }) {
+                    Image(systemName: "gear")
+                        .font(.title)
+                        .foregroundColor(.white)
+                })
+                .navigationBarTitleDisplayMode(.inline)
+                .sheet(isPresented: $showingSettings) {
+                    // Replace with your actual SettingsView initialization
+                    Text("Settings View")
+                }
+                .onAppear(perform: fetchUserData)
+            }
+        }
+        
+        
+        private func fetchUserData() {
+            guard let url = URL(string: "http://127.0.0.1:8000/api/users/\(userSession.username ?? "")") else {
+                print("Invalid URL")
+                return
+            }
+
+            let task = URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    print("Error fetching user data: \(error)")
+                    return
+                }
+
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    print("Error: Invalid response from server")
+                    return
+                }
+
+                guard let data = data else {
+                    print("Error: No data received")
+                    return
+                }
+
+                do {
+                    if let fetchedData = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                        DispatchQueue.main.async {
+                            self.updateUserData(with: fetchedData)
+                        }
+                    }
+                } catch {
+                    print("Error: Could not decode JSON")
                 }
             }
-            .navigationBarTitle(Text(""), displayMode: .inline) // Add this line to hide the default navigation title
+
+            task.resume()
+        }
+
+        private func updateUserData(with data: [String: Any]) {
+            email = data["email"] as? String ?? ""
+            language = data["language"] as? String ?? ""
+            subscription = data["subscription"] as? String ?? ""
+            rateLimit = data["rate_limit"] as? String ?? ""
+
+            if let dobString = data["date_of_birth"] as? String, let dob = dateFormatter.date(from: dobString) {
+                dateOfBirth = dob
+            }
+        }
+        
+        private func updateUserInformation() {
+            guard let url = URL(string: "http://127.0.0.1:8000/api/users/update") else {
+                print("Invalid URL")
+                return
+            }
+
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            let updatedUser = User(
+                username: userSession.username,
+                email: email,
+                email_verified_at: nil, // You may need to handle this depending on your backend requirements
+                name: userSession.name,
+                surname: userSession.surname,
+                password: nil, // You may need to handle password updates separately for security reasons
+                date_of_birth: dateFormatter.string(from: dateOfBirth),
+                language: language,
+                subscription: subscription,
+                rate_limit: rateLimit
+            )
+            
+            do {
+                let jsonData = try JSONEncoder().encode(updatedUser)
+                request.httpBody = jsonData
+                
+                let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                    if let error = error {
+                        print("Error updating user data: \(error)")
+                        return
+                    }
+                    
+                    guard let httpResponse = response as? HTTPURLResponse,
+                          httpResponse.statusCode == 200 else {
+                        print("Error: Invalid response from server")
+                        return
+                    }
+                    
+                    // Handle the successful response here
+                    if let data = data {
+                        if let responseString = String(data: data, encoding: .utf8) {
+                            print("Response String: \(responseString)")
+                        }
+                    }
+                }
+                task.resume()
+            } catch {
+                print("Error encoding user data")
+            }
         }
     }
+    
+    // User struct for encoding
+    struct User: Codable {
+        var username: String?
+        var email: String?
+        var email_verified_at: String?
+        var name: String?
+        var surname: String?
+        var password: String?
+        var date_of_birth: String
+        var language: String
+        var subscription: String
+        var rate_limit: String
+    }
+        
+    
+    
     
     struct SettingsView: View {
         @State private var navigateToLogin = false
