@@ -55,242 +55,963 @@ struct ContentView: View {
             }
     }
     
+    
     struct DetailedSong: Decodable {
         var song_id: String
         var name: String
         var album_id: String
-        var duration: Int?
-        var tempo: String?
-        var key: String?
-        var lyrics: String?
-        var mode: String?
-        var explicit: Int?
-        var danceability: String?
-        var energy: String?
-        var loudness: String?
-        var speechiness: String?
-        var instrumentalness: String?
-        var liveness: String?
-        var valence: String?
-        var time_signature: String?
-        
-        // Add other properties as needed
     }
     
-    
-    struct DetailedPerformer: Decodable {
-        var artist_id: String
+    struct SongRating: Decodable {
+        var song_ratings_avg_rating: String // Assuming JSON structure is similar
+    }
+
+    struct SongRatingResponse: Decodable {
+        var data: [Rating] // Assuming similar structure as AlbumRatingResponse
+    }
+
+    struct SimpleAlbum: Decodable {
+        var album_id: String
         var name: String
-        var genre: String?  // Changed to String
-        var popularity: Int?
-        var image_url: String
     }
 
-    struct PerformerView: View {
-        var artistId: String
-        @State private var performer: DetailedPerformer?
-        
-        var body: some View {
-            Group {
-                VStack(alignment: .leading, spacing: 10) {
-                    AsyncImage(url: URL(string: performer!.image_url)) { image in
-                        image.resizable()
-                    } placeholder: {
-                        ProgressView()
-                    }
-                    .frame(width: 100, height: 100)
-                    
-                    Text(performer!.name)
-                        .font(.title)
-                    
-                    if let popularity = performer?.popularity {
-                        Text("Popularity: \(popularity)")
-                    }
-                    
-                    if let genre = performer?.genre {
-                        Text("Genres: \(genre)") // Use genre directly as it is now a String
-                    }
-                    
-                }
-                
-            }
-            .onAppear {
-                fetchPerformerDetails()
-            }
-        }
-        
-        private func fetchPerformerDetails() {
-            guard let url = URL(string: "http://127.0.0.1:8000/api/performers/\(artistId)") else {
-                print("Invalid URL")
-                return
-            }
-            
-            URLSession.shared.dataTask(with: url) { data, response, error in
-                if let error = error {
-                    print("Error fetching data: \(error.localizedDescription)")
-                    return
-                }
-                
-                guard let httpResponse = response as? HTTPURLResponse,
-                      (200...299).contains(httpResponse.statusCode) else {
-                    print("Server error: \(response.debugDescription)")
-                    return
-                }
-                
-                if let data = data {
-                    do {
-                        var decodedResponse = try JSONDecoder().decode(DetailedPerformer.self, from: data)
-                        
-                        // Convert the genre string to an array
-                        if let genreString = decodedResponse.genre,
-                           let data = genreString.data(using: .utf8),
-                           let jsonArray = try? JSONSerialization.jsonObject(with: data) as? [String] {
-                            decodedResponse.genre = jsonArray.joined(separator: ", ")
-                        }
-                        
-                        DispatchQueue.main.async {
-                            self.performer = decodedResponse
-                        }
-                    } catch {
-                        print("Decoding error: \(error.localizedDescription)")
-                        print(String(data: data, encoding: .utf8) ?? "No data string")
-                    }
-                }
-            }
-        }
-    }
-
-/*
     struct SongView: View {
+        var userId: String
         var songId: String
+        var artistName: String
+        var imageUrl: String
         @State private var song: DetailedSong?
+        @State private var album: SimpleAlbum?
+        @State private var averageRating: Double?
+        @State private var errorMessage: String?
+        @State private var selectedRating: Int?
+        @State private var showAlert = false
+        @State private var alertTitle = ""
+        @State private var alertMessage = ""
+        @State private var userLastRating: Double? = nil
+        @GestureState private var dragOffset: CGFloat = 0
 
         var body: some View {
-            Group {
-                if let song = song {
-                    let album = albums.first(where: { $0.album_id == song.album_id })
-                    let performer = album.flatMap { alb in
-                        performers.first(where: { $0.artist_id == alb.artist_id })
-                    }
-             
-                    VStack(alignment: .leading, spacing: 10) {
-                        AsyncImage(url: URL(string: album.albumImageUrl)) { image in
-                            image.resizable()
+            ZStack {
+                // Background image
+                VStack {
+                    if let url = URL(string: imageUrl) {
+                        AsyncImage(url: url) { image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
                         } placeholder: {
                             ProgressView()
                         }
-                        .frame(width: 100, height: 100)
-                        
-                        Text(song.name)
-                            .font(.title)
-                        // ... other song details ...
+                        .frame(width: UIScreen.main.bounds.width, height: 400)
+                        .ignoresSafeArea()
                     }
-                } else {
-                    Text("Loading...")
+                    Spacer()
                 }
+                
+                // Custom scroll content
+                VStack {
+                    // Spacer to push the content down
+                    Spacer().frame(height: 250)
+                    
+                    // Content container
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack{
+                            if let name = song?.name {
+                                Text(name)
+                                    .multilineTextAlignment(.leading)
+                                    .lineLimit(nil) // Allows unlimited lines
+                                    .fixedSize(horizontal: false, vertical: true) // Allows vertical expansion
+                                    .frame(maxWidth: .infinity, alignment: .center) // Use the full width
+                                    .padding(.horizontal, 10)
+                                    .padding(.top, 55)
+                                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                                    .foregroundColor(.white)
+                                    .frame(width: UIScreen.main.bounds.width, alignment: .leading)
+                                    .padding(.horizontal, 20)
+                                    .background(LinearGradient(gradient: Gradient(colors: [Color.black.opacity(0.7), Color.clear]), startPoint: .bottom, endPoint: .top))
+                                
+                                Spacer()
+                        }
+                        // album's name
+                        
+                            
+                        }
+                        
+                        Divider()
+                            .frame(height: 10)
+                            .background(Color.black.opacity(0.7)) // Set divider color to white
+                        
+                        // album details
+                        VStack(alignment: .leading, spacing: 60) {
+                            HStack(spacing: 10){
+                                
+                                
+                                Spacer()
+                            }
+                            .padding(.top, -25)
+                            .frame(width: 400, height: 70)
+                            .background(LinearGradient(gradient: Gradient(colors: [Color.black.opacity(0.7), Color.clear]), startPoint: .top, endPoint: .bottom))
+                            
+                            VStack (spacing: 40){
+                                HStack(spacing: 10){
+                                    
+                                   
+                                    Text("Artist: \(artistName)")
+                                        .multilineTextAlignment(.leading)
+                                        .lineLimit(nil) // Allows unlimited lines
+                                        .fixedSize(horizontal: false, vertical: true) // Allows vertical expansion
+                                        .foregroundColor(.white.opacity(0.85)) // Set text color to white
+                                        .font(.custom("Optima", size: 28))
+                                        .fontWeight(.semibold) // Adjust the weight as needed
+                                        .italic()
+                                        .padding(.leading, 15)
+                                        .padding(.top, -120)
+                                
+                                   
+                                    Spacer()
+                                }
+                                
+                                HStack(spacing: 10){
+                                    
+                                   
+                                    Text("Album: \(album?.name ?? "Unknown")")
+                                        .multilineTextAlignment(.leading)
+                                        .lineLimit(nil) // Allows unlimited lines
+                                        .fixedSize(horizontal: false, vertical: true) // Allows vertical expansion
+                                        .foregroundColor(.white.opacity(0.85)) // Set text color to white
+                                        .font(.custom("Optima", size: 28))
+                                        .fontWeight(.semibold) // Adjust the weight as needed
+                                        .italic()
+                                        .padding(.leading, 15)
+                                        .padding(.top, -120)
+                                
+                                   
+                                    Spacer()
+                                }
+                            }
+                            
+                            
+
+                            ZStack {
+                                Rectangle()
+                                    .foregroundColor(Color.black.opacity(0.4)) // Adjust the color and opacity as needed
+                                    .frame(height: 195) // Adjust the height of the rectangle
+                                VStack(spacing: 10){
+                                    HStack(spacing: 5) {
+                                        Text("Rate This Song: ")
+                                            .foregroundColor(.white.opacity(0.85))
+                                            .font(.custom("Optima", size: 24))
+                                            .fontWeight(.bold)
+                                            .padding(.leading, 15)
+                                        
+                                        Spacer()
+
+                                        ForEach(1...5, id: \.self) { index in
+                                            Button(action: {
+                                                selectedRating = index
+                                                submitRating(for: songId, with: index, username: userId)
+                                            }) {
+                                                Image(systemName: index <= (selectedRating ?? 0) ? "star.fill" : "star")
+                                                    .foregroundColor(.yellow)
+                                                    .font(.system(size: 30))
+                                            }
+                                        }
+                                        Spacer()
+                                        Spacer()
+                                        Spacer()
+
+                                    }
+                                    .padding(.leading, 10)
+                                    .padding(.vertical, 20)
+                                    
+                                    HStack(spacing: 5) {
+                                        if let averageRating = averageRating {
+                                            Text("Average Rating : \(String(format: "%.2f", averageRating))/5")
+                                                .foregroundColor(.white.opacity(0.85))
+                                                .font(.custom("Optima", size: 24))
+                                                .fontWeight(.bold)
+                                        }
+                                        
+                                        Spacer()
+                                    }
+                                    .padding(.leading, 15)
+
+                                    HStack(spacing: 5) {
+                                        if let userRating = userLastRating {
+                                            let intValue = Int(userRating)
+                                            Text("Your Last Rating: \(String(intValue))/5")
+                                                .foregroundColor(.white.opacity(0.85))
+                                                .font(.custom("Optima", size: 24))
+                                                .fontWeight(.bold)
+                                        }
+                                        
+                                        Spacer()
+                                    }
+                                    .padding(.leading, 15)
+
+                                    
+                                }
+                                
+                            }
+                            .frame(height: 50) // Match the height of the RoundedRectangle
+                            .padding(.top, -25)
+                            
+                            
+                            
+                            Spacer()
+                        }
+                        .frame(width: 400, height: 500)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 0)
+                        .background(LinearGradient(gradient: Gradient(colors: [Color.black.opacity(0.5), Color.clear]), startPoint: .top, endPoint: .bottom))
+                        .background(LinearGradient(gradient: Gradient(colors: [.pink, .yellow]), startPoint: .topLeading, endPoint: .bottomTrailing)) // Gradient background
+                        .cornerRadius(10)
+                        
+                        Spacer()
+                    }
+                    .frame(minHeight: 600) // This will make sure the white content area is larger
+                }
+                .offset(y: dragOffset)
+                .animation(.spring(), value: dragOffset)
+                .gesture(
+                    DragGesture().updating($dragOffset, body: { (value, state, transaction) in
+                        if value.translation.height > 55 { // Limit drag to 20 pixels
+                            state = 55
+                        } else {
+                            state = value.translation.height
+                        }
+                    })
+                )
+            }
+            .alert(isPresented: $showAlert) {
+                Alert(title: Text(alertTitle), message: Text(alertMessage), dismissButton: .default(Text("OK")))
             }
             .onAppear {
                 fetchSongDetails()
             }
         }
 
-        private func fetchSongDetails() {
-            guard let url = URL(string: "http://127.0.0.1:8000/api/songs/\(songId)") else { return }
+        private func fetchAlbumDetails() {
+            guard let albumId = song?.album_id else {
+                self.errorMessage = "Album ID not found"
+                return
+            }
+
+            guard let url = URL(string: "http://127.0.0.1:8000/api/albums/\(albumId)") else {
+                self.errorMessage = "Invalid URL for album details"
+                return
+            }
+            print(url)
             URLSession.shared.dataTask(with: url) { data, response, error in
-                if let data = data {
-                    if let decodedResponse = try? JSONDecoder().decode(Song.self, from: data) {
-                        DispatchQueue.main.async {
-                            self.song = decodedResponse
-                        }
+                if let error = error {
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Network error: \(error.localizedDescription)"
+                        self.alertTitle = "Network Error"
+                        self.alertMessage = error.localizedDescription
+                        self.showAlert = true
+                    }
+                    return
+                }
+
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Server error"
+                        self.alertTitle = "Server Error"
+                        self.alertMessage = "Failed to load album details"
+                        self.showAlert = true
+                    }
+                    return
+                }
+
+                guard let data = data else {
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Data error"
+                        self.alertTitle = "Data Error"
+                        self.alertMessage = "Invalid data received from the server"
+                        self.showAlert = true
+                    }
+                    return
+                }
+
+                do {
+                    let decodedResponse = try JSONDecoder().decode(SimpleAlbum.self, from: data)
+                    DispatchQueue.main.async {
+                        self.album = decodedResponse
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Decoding error: \(error.localizedDescription)"
+                        self.alertTitle = "Decoding Error"
+                        self.alertMessage = error.localizedDescription
+                        self.showAlert = true
                     }
                 }
             }.resume()
         }
-    }
 
-*/
-    
-    
-
-    struct RatingSheetView: View {
-        @Environment(\.presentationMode) var presentationMode
-        var itemID: String
-        var itemType: ItemType
-        @State private var selectedRating: Int?
-        @State private var errorMessage: String?
-        @EnvironmentObject var userSession: UserSession
-
-
+            
+        private func fetchSongDetails() {
+            fetchSong()
+            fetchUserLastRating(songId: songId, username: userId)
+        }
         
-        private var ratingTitle: String {
-                switch itemType {
-                case .song:
-                    return "Rate this Song"
-                case .album:
-                    return "Rate this Album"
-                case .performer:
-                    return "Rate this Performer"
+        private func fetchSong() {
+            guard let url = URL(string: "http://127.0.0.1:8000/api/songs/\(songId)") else {
+                self.errorMessage = "Invalid URL for song details"
+                return
+            }
+            print(url)
+
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Network error: \(error.localizedDescription)"
+                        self.alertTitle = "Network Error"
+                        self.alertMessage = error.localizedDescription
+                        self.showAlert = true
+                    }
+                    return
                 }
-        }
-        func getCurrentFormattedDate() -> String {
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss" // Adjust the format to match your backend expectation
-            return dateFormatter.string(from: Date())
-        }
-        
-        
-        var body: some View {
-            NavigationView {
-                VStack {
-                    Text(ratingTitle)
-                    // Display rating options (0 to 5)
-                    HStack{
-                        ForEach(0..<6) { rating in
-                                Button("\(rating)") {
-                                    if let username = userSession.username {
-                                        submitRating(for: itemID, with: rating, username: username, itemType: itemType)
-                                    }
-                                }
-                            .padding()  // Style as needed
-                        }
-                        if let errorMessage = errorMessage {
-                            Text(errorMessage)
-                                .foregroundColor(.red)
+                
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Server error"
+                        self.alertTitle = "Server Error"
+                        self.alertMessage = "Failed to load song details"
+                        self.showAlert = true
+                    }
+                    return
+                }
+                
+                guard let data = data else {
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Data error"
+                        self.alertTitle = "Data Error"
+                        self.alertMessage = "Invalid data received from the server"
+                        self.showAlert = true
+                    }
+                    return
+                }
+                
+                do {
+                    let decodedResponse = try JSONDecoder().decode(DetailedSong.self, from: data)
+                    DispatchQueue.main.async {
+                        self.song = decodedResponse
+                        // Call to fetchAverageRating should be here, after performer is set
+                        if let encodedName = self.song?.name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) {
+                            self.fetchAverageRating(songName: encodedName)
+                            self.fetchAlbumDetails()
                         }
                     }
+                } catch {
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Decoding error: \(error.localizedDescription)"
+                        self.alertTitle = "Decoding Error"
+                        self.alertMessage = error.localizedDescription
+                        self.showAlert = true
+                    }
                 }
-                .navigationTitle("Rate")
-                .navigationBarItems(trailing: Button("Done") {
-                    presentationMode.wrappedValue.dismiss()
-                })
-            }
+            }.resume()
         }
         
-        func submitRating(for itemID: String, with rating: Int, username: String, itemType: ItemType) {
-            let endpoint: String
-            let key: String
-
-            switch itemType {
-            case .song:
-                endpoint = "songrating"
-                key = "song_id"
-            case .album:
-                endpoint = "albumrating"
-                key = "album_id"
-            case .performer:
-                endpoint = "performerrating"
-                key = "artist_id"
+        private func fetchUserLastRating(songId: String, username: String) {
+            guard let url = URL(string: "http://127.0.0.1:8000/api/songrating/song/\(songId)") else {
+                print("Invalid URL for song rating")
+                return
             }
+            print(url)
 
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    print("Network error: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    print("Server error or invalid response for song rating")
+                    return
+                }
+                
+                guard let data = data else {
+                    print("No data received for song rating")
+                    return
+                }
+                
+                do {
+                    let decodedResponse = try JSONDecoder().decode(RatingResponse.self, from: data)
+                    if let lastRating = decodedResponse.data.filter({ $0.username == username }).last {
+                        DispatchQueue.main.async {
+                            // Here we parse the string to a Double
+                            self.userLastRating = Double(lastRating.rating)
+                        }
+                    }
+                } catch {
+                    print("Decoding error for song rating: \(error)")
+                }
+            }.resume()            }
+        
+        private func fetchAverageRating(songName: String) {
+            guard let url = URL(string: "http://127.0.0.1:8000/api/search/song/\(songName)") else {
+                print("Invalid URL for average rating")
+                self.errorMessage = "Invalid URL for average rating"
+                return
+            }
+            print(url)
+
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    print("Network error: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    print("Server error or invalid response for average rating")
+                    return
+                }
+                
+                guard let data = data else {
+                    print("No data received for average rating")
+                    return
+                }
+                
+                do {
+                    // Assuming the JSON structure is an array of album ratings
+                    let decodedResponse = try JSONDecoder().decode([SongRating].self, from: data)
+                    if let firstSongRating = decodedResponse.first {
+                        DispatchQueue.main.async {
+                            // Here we parse the string to a Double
+                            if let averageRating = Double(firstSongRating.song_ratings_avg_rating) {
+                                self.averageRating = averageRating
+                            } else {
+                                print("Failed to parse average rating to a Double")
+                            }
+                        }
+                    }
+                } catch {
+                    print("Decoding error for average rating: \(error)")
+                }
+            }.resume()
+        }
+        
+        private func submitRating(for songID: String, with rating: Int, username: String) {
+            let endpoint: String = "songrating/"
+            
             guard let url = URL(string: "http://127.0.0.1:8000/api/\(endpoint)") else {
                 self.errorMessage = "Invalid URL"
                 return
             }
+            
+            print(url)
 
+            
             let currentDate = getCurrentFormattedDate()
             
             let ratingData: [String: Any] = [
-                key: itemID,
+                "song_id": songID,
+                "rating": rating,
+                "username": username,
+                "date_rated": currentDate // include the date
+            ]
+            
+            print(ratingData)
+            
+            guard let jsonData = try? JSONSerialization.data(withJSONObject: ratingData) else {
+                self.errorMessage = "Error encoding data"
+                return
+            }
+            
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.httpBody = jsonData
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        self.errorMessage = "Network error: \(error.localizedDescription)"
+                        self.alertTitle = "Error"
+                        self.alertMessage = "Network error: \(error.localizedDescription)"
+                        self.showAlert = true
+                        return
+                    }
+                    
+                    if let httpResponse = response as? HTTPURLResponse {
+                        if !(200...299).contains(httpResponse.statusCode) {
+                            self.errorMessage = "Server error: \(httpResponse.statusCode)"
+                            self.alertTitle = "Error"
+                            self.alertMessage = "Server error: \(httpResponse.statusCode)"
+                        } else {
+                            self.alertTitle = "Success"
+                            self.alertMessage = "Rating submitted successfully"
+                            self.selectedRating = rating // Update the rating state if you need to reflect it in the UI
+                            
+                            // Refresh the user's last rating and the average rating after submission
+                            if let songName = self.song?.name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) {
+                                self.fetchAverageRating(songName: songName)
+                            }
+                            self.fetchUserLastRating(songId: songID, username: username)
+                        }
+                        self.showAlert = true
+                    }
+                }
+            }.resume()
+        }
+        private func getCurrentFormattedDate() -> String {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            return dateFormatter.string(from: Date())
+        }
+    }
+
+
+    
+//    struct SongView_Previews: PreviewProvider {
+//        static var previews: some View {
+//            SongView(userId: "ozaancelebi2", songId: "0VjIjW4GlUZAMYd2vXMi3b", artistName: "The Weeknd", imageUrl: "https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36" )
+//        }
+//
+//    }
+    
+    struct DetailedAlbum: Decodable {
+        var album_id: String
+        var name: String
+        var release_date: String
+        var total_tracks: Int
+        var popularity: Int
+        var image_url: String
+        var artist_id: String
+    }
+
+    struct AlbumRating: Decodable {
+        var album_ratings_avg_rating: String // Since the JSON has this as a String
+    }
+
+    struct AlbumRatingResponse: Decodable {
+        var data: [Rating] // Assuming similar structure as PerformerRatingResponse
+    }
+    
+    
+    
+    
+    struct AlbumView: View {
+        var userId: String
+        var albumId: String
+        var performerName: String
+        @State private var album: DetailedAlbum?
+        @State private var averageRating: Double?
+        @State private var errorMessage: String?
+        @State private var selectedRating: Int?
+        @State private var showAlert = false
+        @State private var alertTitle = ""
+        @State private var alertMessage = ""
+        @State private var userLastRating: Double? = nil
+        @GestureState private var dragOffset: CGFloat = 0
+
+        var body: some View {
+            ZStack {
+                // Background image
+                VStack {
+                    if let imageUrl = album?.image_url, let url = URL(string: imageUrl) {
+                        AsyncImage(url: url) { image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .frame(width: UIScreen.main.bounds.width, height: 400)
+                        .ignoresSafeArea()
+                    }
+                    Spacer()
+                }
+                
+                // Custom scroll content
+                VStack {
+                    // Spacer to push the content down
+                    Spacer().frame(height: 250)
+                    
+                    // Content container
+                    VStack(alignment: .leading, spacing: 0) {
+                        // album's name
+                        if let name = album?.name {
+                            
+                                        
+                            
+                            Text(name)
+                                .multilineTextAlignment(.leading)
+                                .lineLimit(nil) // Allows unlimited lines
+                                .fixedSize(horizontal: false, vertical: true) // Allows vertical expansion
+                                .frame(maxWidth: .infinity, alignment: .center) // Use the full width
+                                .padding(.horizontal, 10)
+                                .padding(.top, 55)
+                                .font(.system(size: 48, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                                .frame(width: UIScreen.main.bounds.width, alignment: .leading)
+                                .padding(.horizontal, 20)
+                                .background(LinearGradient(gradient: Gradient(colors: [Color.black.opacity(0.7), Color.clear]), startPoint: .bottom, endPoint: .top))
+                            
+                        }
+                        
+                        Divider()
+                            .frame(height: 10)
+                            .background(Color.black.opacity(0.7)) // Set divider color to white
+                        
+                        // album details
+                        VStack(alignment: .leading, spacing: 60) {
+                            HStack(spacing: 10){
+                                
+                                if let popularity = album?.popularity {
+                                    Text("Popularity Score: \(popularity)")
+                                        .foregroundColor(.white.opacity(0.85)) // Set text color to white
+                                        .font(.custom("Optima", size: 18))
+                                        .fontWeight(.semibold) // Adjust the weight as needed
+                                        .italic()
+                                        .padding(.leading, 15)
+                                    
+                                }
+                                if let total_tracks = album?.total_tracks {
+                                    HStack{
+                                        Text("Number of tracks:")
+                                            .foregroundColor(.white.opacity(0.85)) // Set text color to white
+                                            .font(.custom("Optima", size: 18))
+                                            .fontWeight(.semibold) // Adjust the weight as needed
+                                            .italic()
+                                        Text("\(total_tracks)")
+                                            .foregroundColor(.white.opacity(0.85)) // Set text color to white
+                                            .font(.custom("Optima", size: 18))
+                                            .fontWeight(.semibold) // Adjust the weight as needed
+                                            .italic()
+                                            .padding(.trailing, 15)
+                                    }
+                                    
+                                }
+                                Spacer()
+                            }
+                            .padding(.top, -25)
+                            .frame(width: UIScreen.main.bounds.width, height: 70)
+                            .background(LinearGradient(gradient: Gradient(colors: [Color.black.opacity(0.7), Color.clear]), startPoint: .top, endPoint: .bottom))
+                            
+                            HStack(spacing: 10){
+                                
+                               
+                                if let release = album?.release_date {
+                                    Text("Release date: \(release)")
+                                        .foregroundColor(.white.opacity(0.85)) // Set text color to white
+                                        .font(.custom("Optima", size: 18))
+                                        .fontWeight(.semibold) // Adjust the weight as needed
+                                        .italic()
+                                        .padding(.leading, 15)
+                                }
+                               
+                                Spacer()
+                            }
+                            .padding(.top, -92)
+                            
+                            HStack(spacing: 10){
+                                
+                               
+                                Text("Artist: \(performerName)")
+                                    .multilineTextAlignment(.leading)
+                                    .lineLimit(nil) // Allows unlimited lines
+                                    .fixedSize(horizontal: false, vertical: true) // Allows vertical expansion
+                                    .foregroundColor(.white.opacity(0.85)) // Set text color to white
+                                    .font(.custom("Optima", size: 28))
+                                    .fontWeight(.semibold) // Adjust the weight as needed
+                                    .italic()
+                                    .padding(.leading, 15)
+                                    .padding(.top, -120)
+                            
+                               
+                                Spacer()
+                            }
+
+                            ZStack {
+                                Rectangle()
+                                    .foregroundColor(Color.black.opacity(0.4)) // Adjust the color and opacity as needed
+                                    .frame(height: 195) // Adjust the height of the rectangle
+                                VStack(spacing: 10){
+                                    HStack(spacing: 5) {
+                                        Text("Rate This Album: ")
+                                            .foregroundColor(.white.opacity(0.85))
+                                            .font(.custom("Optima", size: 24))
+                                            .fontWeight(.bold)
+                                        
+                                        Spacer()
+
+                                        ForEach(1...5, id: \.self) { index in
+                                            Button(action: {
+                                                selectedRating = index
+                                                submitRating(for: albumId, with: index, username: userId)
+                                            }) {
+                                                Image(systemName: index <= (selectedRating ?? 0) ? "star.fill" : "star")
+                                                    .foregroundColor(.yellow)
+                                                    .font(.system(size: 30))
+                                            }
+                                        }
+                                        Spacer()
+                                        Spacer()
+                                        Spacer()
+
+                                    }
+                                    .padding(.leading, 10)
+                                    .padding(.vertical, 20)
+                                    
+                                    HStack(spacing: 5) {
+                                        if let averageRating = averageRating {
+                                            Text("Average Rating : \(String(format: "%.2f", averageRating))/5")
+                                                .foregroundColor(.white.opacity(0.85))
+                                                .font(.custom("Optima", size: 24))
+                                                .fontWeight(.bold)
+                                        }
+                                        
+                                        Spacer()
+                                    }
+                                    .padding(.leading, 10)
+                                    
+                                    HStack(spacing: 5) {
+                                        if let userRating = userLastRating {
+                                            let intValue = Int(userRating)
+                                            Text("Your Last Rating: \(String(intValue))/5")
+                                                .foregroundColor(.white.opacity(0.85))
+                                                .font(.custom("Optima", size: 24))
+                                                .fontWeight(.bold)
+                                        }
+                                        
+                                        Spacer()
+                                    }
+                                    .padding(.leading, 10)
+
+                                    
+                                }
+                                
+                            }
+                            .frame(height: 50) // Match the height of the RoundedRectangle
+                            .padding(.top, -25)
+                            
+                            
+                            
+                            Spacer()
+                        }
+                        .frame(width: UIScreen.main.bounds.width, height: 500)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 0)
+                        .background(LinearGradient(gradient: Gradient(colors: [Color.black.opacity(0.5), Color.clear]), startPoint: .top, endPoint: .bottom))
+                        .background(LinearGradient(gradient: Gradient(colors: [.pink, .yellow]), startPoint: .topLeading, endPoint: .bottomTrailing)) // Gradient background
+                        .cornerRadius(10)
+                        
+                        Spacer()
+                    }
+                    .frame(minHeight: 600) // This will make sure the white content area is larger
+                }
+                .offset(y: dragOffset)
+                .animation(.spring(), value: dragOffset)
+                .gesture(
+                    DragGesture().updating($dragOffset, body: { (value, state, transaction) in
+                        if value.translation.height > 55 { // Limit drag to 20 pixels
+                            state = 55
+                        } else {
+                            state = value.translation.height
+                        }
+                    })
+                )
+            }
+            .alert(isPresented: $showAlert) {
+                Alert(title: Text(alertTitle), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+            }
+            .onAppear {
+                fetchAlbumDetails()
+            }
+        }
+        
+        private func fetchAlbumDetails() {
+            fetchAlbum()
+            fetchUserLastRating(albumId: albumId, username: userId)
+        }
+
+        private func fetchAlbum() {
+            guard let url = URL(string: "http://127.0.0.1:8000/api/albums/\(albumId)") else {
+                self.errorMessage = "Invalid URL for album details"
+                return
+            }
+
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Network error: \(error.localizedDescription)"
+                        self.alertTitle = "Network Error"
+                        self.alertMessage = error.localizedDescription
+                        self.showAlert = true
+                    }
+                    return
+                }
+
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Server error"
+                        self.alertTitle = "Server Error"
+                        self.alertMessage = "Failed to load album details"
+                        self.showAlert = true
+                    }
+                    return
+                }
+
+                guard let data = data else {
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Data error"
+                        self.alertTitle = "Data Error"
+                        self.alertMessage = "Invalid data received from the server"
+                        self.showAlert = true
+                    }
+                    return
+                }
+
+                do {
+                    let decodedResponse = try JSONDecoder().decode(DetailedAlbum.self, from: data)
+                    DispatchQueue.main.async {
+                        self.album = decodedResponse
+                        if let encodedName = self.album?.name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) {
+                            self.fetchAverageRating(albumName: encodedName)
+                        }
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Decoding error: \(error.localizedDescription)"
+                        self.alertTitle = "Decoding Error"
+                        self.alertMessage = error.localizedDescription
+                        self.showAlert = true
+                    }
+                }
+            }.resume()
+        }
+
+        private func fetchUserLastRating(albumId: String, username: String) {
+                    guard let url = URL(string: "http://127.0.0.1:8000/api/albumrating/album/\(albumId)") else {
+                        print("Invalid URL for album rating")
+                        return
+                    }
+                    
+                    URLSession.shared.dataTask(with: url) { data, response, error in
+                        if let error = error {
+                            print("Network error: \(error.localizedDescription)")
+                            return
+                        }
+                        
+                        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                            print("Server error or invalid response for album rating")
+                            return
+                        }
+                        
+                        guard let data = data else {
+                            print("No data received for album rating")
+                            return
+                        }
+                        
+                        do {
+                            let decodedResponse = try JSONDecoder().decode(RatingResponse.self, from: data)
+                            if let lastRating = decodedResponse.data.filter({ $0.username == username }).last {
+                                DispatchQueue.main.async {
+                                    // Here we parse the string to a Double
+                                    self.userLastRating = Double(lastRating.rating)
+                                }
+                            }
+                        } catch {
+                            print("Decoding error for album rating: \(error)")
+                        }
+                    }.resume()
+                }
+
+        private func fetchAverageRating(albumName: String) {
+            guard let url = URL(string: "http://127.0.0.1:8000/api/search/album/\(albumName)") else {
+                print("Invalid URL for average rating")
+                self.errorMessage = "Invalid URL for average rating"
+                return
+            }
+            
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    print("Network error: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    print("Server error or invalid response for average rating")
+                    return
+                }
+                
+                guard let data = data else {
+                    print("No data received for average rating")
+                    return
+                }
+                
+                do {
+                    // Assuming the JSON structure is an array of album ratings
+                    let decodedResponse = try JSONDecoder().decode([AlbumRating].self, from: data)
+                    if let firstAlbumRating = decodedResponse.first {
+                        DispatchQueue.main.async {
+                            // Here we parse the string to a Double
+                            if let averageRating = Double(firstAlbumRating.album_ratings_avg_rating) {
+                                self.averageRating = averageRating
+                            } else {
+                                print("Failed to parse average rating to a Double")
+                            }
+                        }
+                    }
+                } catch {
+                    print("Decoding error for average rating: \(error)")
+                }
+            }.resume()
+        }
+
+        func fetchPerformerDetails(artistId: String) {
+            guard let url = URL(string: "http://127.0.0.1:8000/api/performers/\(artistId)") else {
+                print("Invalid URL")
+                return
+            }
+
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    print("Network error: \(error.localizedDescription)")
+                    return
+                }
+
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    print("Server error or invalid response")
+                    return
+                }
+
+                guard let data = data else {
+                    print("No data received")
+                    return
+                }
+
+                do {
+                    let decodedResponse = try JSONDecoder().decode(Performer.self, from: data)
+                    DispatchQueue.main.async {
+                        print("Performer name: \(decodedResponse.name)")
+                        // Handle the fetched data as needed
+                    }
+                } catch {
+                    print("Decoding error: \(error)")
+                }
+            }.resume()
+        }
+
+        
+        
+        private func submitRating(for albumID: String, with rating: Int, username: String) {
+            let endpoint: String = "albumrating/"
+            
+            guard let url = URL(string: "http://127.0.0.1:8000/api/\(endpoint)") else {
+                self.errorMessage = "Invalid URL"
+                return
+            }
+            
+            let currentDate = getCurrentFormattedDate()
+            
+            let ratingData: [String: Any] = [
+                "album_id": albumID,
                 "rating": rating,
                 "username": username,
                 "date_rated": currentDate // include the date
@@ -300,39 +1021,494 @@ struct ContentView: View {
                 self.errorMessage = "Error encoding data"
                 return
             }
-
+            
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.httpBody = jsonData
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
+            
             URLSession.shared.dataTask(with: request) { data, response, error in
-                if let error = error {
-                    DispatchQueue.main.async {
-                        self.errorMessage = "Network error: \(error.localizedDescription)"
-                    }
-                    return
-                }
-
-                if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
-                    DispatchQueue.main.async {
-                        self.errorMessage = "Server error: \(httpResponse.statusCode)"
-                    }
-                    return
-                }
-
                 DispatchQueue.main.async {
-                    // Handle successful submission
+                    if let error = error {
+                        self.errorMessage = "Network error: \(error.localizedDescription)"
+                        self.alertTitle = "Error"
+                        self.alertMessage = "Network error: \(error.localizedDescription)"
+                        self.showAlert = true
+                        return
+                    }
+                    
+                    if let httpResponse = response as? HTTPURLResponse {
+                        if !(200...299).contains(httpResponse.statusCode) {
+                            self.errorMessage = "Server error: \(httpResponse.statusCode)"
+                            self.alertTitle = "Error"
+                            self.alertMessage = "Server error: \(httpResponse.statusCode)"
+                        } else {
+                            self.alertTitle = "Success"
+                            self.alertMessage = "Rating submitted successfully"
+                            self.selectedRating = rating // Update the rating state if you need to reflect it in the UI
+                            
+                            // Refresh the user's last rating and the average rating after submission
+                            if let albumName = self.album?.name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) {
+                                self.fetchAverageRating(albumName: albumName)
+                            }
+                            self.fetchUserLastRating(albumId: albumID, username: username)
+                        }
+                        self.showAlert = true
+                    }
                 }
             }.resume()
         }
 
+        private func getCurrentFormattedDate() -> String {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss" // Adjust the format to match your backend expectation
+            return dateFormatter.string(from: Date())
+        }
     }
+
+//    struct AlbumView_Previews: PreviewProvider {
+//            static var previews: some View {
+//                AlbumView(userId: "ozaancelebi2", albumId: "03Mx6yaV7k4bsEmcTH8J49", performerName: "Ismim Var Bro" )
+//            }
+//            
+//        }
+    
+    
+        
+    
+    struct DetailedPerformer: Decodable {
+        var artist_id: String
+        var name: String
+        var genre: String?
+        var popularity: Int?
+        var image_url: String
+    }
+
+    struct PerformerRating: Decodable {
+        var performer_ratings_avg_rating: String // Since the JSON has this as a String
+    }
+    
+    struct RatingResponse: Decodable {
+        var data: [Rating]
+    }
+
+    struct Rating: Decodable {
+        var id: Int
+        var rating: String
+        var username: String
+        var artist_id: String?
+        var date_rated: String
+    }
+
+    struct PerformerView: View {
+        var userId: String
+        var artistId: String
+        @State private var performer: DetailedPerformer?
+        @State private var averageRating: Double?
+        @GestureState private var dragOffset: CGFloat = 0
+        @State private var errorMessage: String?
+        @State private var selectedRating: Int?
+        @State private var showAlert = false
+        @State private var alertTitle = ""
+        @State private var alertMessage = ""
+        @State private var userLastRating: Double? = nil
+        
+        
+        var body: some View {
+            ZStack {
+                // Background image
+                VStack {
+                    if let imageUrl = performer?.image_url, let url = URL(string: imageUrl) {
+                        AsyncImage(url: url) { image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .frame(width: UIScreen.main.bounds.width, height: 400)
+                        .ignoresSafeArea()
+                    }
+                    Spacer()
+                }
+                
+                // Custom scroll content
+                VStack {
+                    // Spacer to push the content down
+                    Spacer().frame(height: 250)
+                    
+                    // Content container
+                    VStack(alignment: .leading, spacing: 0) {
+                        // Performer's name
+                        if let name = performer?.name {
+                            Text(name)
+                                .padding(.horizontal, 10)
+                                .padding(.top, 55)
+                                .font(.system(size: 48, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                                .frame(width: UIScreen.main.bounds.width, alignment: .leading)
+                                .padding(.horizontal, 20)
+                                .background(LinearGradient(gradient: Gradient(colors: [Color.black.opacity(0.7), Color.clear]), startPoint: .bottom, endPoint: .top))
+                            
+                        }
+                        
+                        Divider()
+                            .frame(height: 10)
+                            .background(Color.black.opacity(0.7)) // Set divider color to white
+                        
+                        // Performer details
+                        VStack(alignment: .leading, spacing: 60) {
+                            HStack(spacing: 10){
+                                
+                                if let popularity = performer?.popularity {
+                                    Text("Popularity Score: \(popularity)  |")
+                                        .foregroundColor(.white.opacity(0.85)) // Set text color to white
+                                        .font(.custom("Optima", size: 18))
+                                        .fontWeight(.semibold) // Adjust the weight as needed
+                                        .italic()
+                                        .padding(.leading, 15)
+                                    
+                                }
+                                if let genre = performer?.genre {
+                                    HStack{
+                                        Text("Genres:")
+                                            .foregroundColor(.white.opacity(0.85)) // Set text color to white
+                                            .font(.custom("Optima", size: 18))
+                                            .fontWeight(.semibold) // Adjust the weight as needed
+                                            .italic()
+                                        Text("\(genre)")
+                                            .multilineTextAlignment(.leading)
+                                            .lineLimit(nil) // Allows unlimited lines
+                                            .fixedSize(horizontal: false, vertical: true) // Allows vertical expansion
+                                            .foregroundColor(.white.opacity(0.85)) // Set text color to white
+                                            .font(.custom("Optima", size: 18))
+                                            .fontWeight(.semibold) // Adjust the weight as needed
+                                            .italic()
+                                            .padding(.trailing, 15)
+                                    }
+                                    
+                                }
+                                Spacer()
+                            }
+                            .padding(.top, -25)
+                            .frame(width: UIScreen.main.bounds.width, height: 70)
+                            .background(LinearGradient(gradient: Gradient(colors: [Color.black.opacity(0.7), Color.clear]), startPoint: .top, endPoint: .bottom))
+                            
+                            ZStack {
+                                Rectangle()
+                                    .foregroundColor(Color.black.opacity(0.4)) // Adjust the color and opacity as needed
+                                    .frame(height: 195) // Adjust the height of the rectangle
+                                VStack(spacing: 10){
+                                    HStack(spacing: 5) {
+                                        Text("Rate This Performer: ")
+                                            .foregroundColor(.white.opacity(0.85))
+                                            .font(.custom("Optima", size: 24))
+                                            .fontWeight(.bold)
+                                        
+                                        Spacer()
+
+                                        ForEach(1...5, id: \.self) { index in
+                                            Button(action: {
+                                                selectedRating = index
+                                                submitRating(for: artistId, with: index, username: userId)
+                                            }) {
+                                                Image(systemName: index <= (selectedRating ?? 0) ? "star.fill" : "star")
+                                                    .foregroundColor(.yellow)
+                                                    .font(.system(size: 30))
+                                            }
+                                        }
+                                        Spacer()
+                                        Spacer()
+                                        Spacer()
+
+                                    }
+                                    .padding(.leading, 10)
+                                    .padding(.vertical, 20)
+                                    
+                                    HStack(spacing: 5) {
+                                        if let averageRating = averageRating {
+                                            Text("Average Rating : \(String(format: "%.2f", averageRating))/5")
+                                                .foregroundColor(.white.opacity(0.85))
+                                                .font(.custom("Optima", size: 24))
+                                                .fontWeight(.bold)
+                                        }
+                                        
+                                        Spacer()
+                                    }
+                                    .padding(.leading, 10)
+                                    
+                                    HStack(spacing: 5) {
+                                        if let userRating = userLastRating {
+                                            let intValue = Int(userRating)
+                                            Text("Your Last Rating: \(String(intValue))/5")
+                                                .foregroundColor(.white.opacity(0.85))
+                                                .font(.custom("Optima", size: 24))
+                                                .fontWeight(.bold)
+                                        }
+                                        
+                                        Spacer()
+                                    }
+                                    .padding(.leading, 10)
+
+                                    
+                                }
+                                
+                            }
+                            .frame(height: 50) // Match the height of the RoundedRectangle
+                            
+                            
+                            
+                            Spacer()
+                        }
+                        .frame(width: UIScreen.main.bounds.width, height: 500)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 0)
+                        .background(LinearGradient(gradient: Gradient(colors: [Color.black.opacity(0.5), Color.clear]), startPoint: .top, endPoint: .bottom))
+                        .background(LinearGradient(gradient: Gradient(colors: [.pink, .yellow]), startPoint: .topLeading, endPoint: .bottomTrailing)) // Gradient background
+                        .cornerRadius(10)
+                        
+                        Spacer()
+                    }
+                    .frame(minHeight: 600) // This will make sure the white content area is larger
+                }
+                .offset(y: dragOffset)
+                .animation(.spring(), value: dragOffset)
+                .gesture(
+                    DragGesture().updating($dragOffset, body: { (value, state, transaction) in
+                        if value.translation.height > 55 { // Limit drag to 20 pixels
+                            state = 55
+                        } else {
+                            state = value.translation.height
+                        }
+                    })
+                )
+            }
+            .alert(isPresented: $showAlert) {
+                Alert(title: Text(alertTitle), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+            }
+            .onAppear {
+                fetchPerformerDetails()
+            }
+        }
+        private func fetchPerformerDetails() {
+            fetchPerformer()
+            fetchUserLastRating(artistId: artistId, username: userId)
+        }
+        
+        private func fetchPerformer() {
+            guard let url = URL(string: "http://127.0.0.1:8000/api/performers/\(artistId)") else {
+                self.errorMessage = "Invalid URL for performer details"
+                return
+            }
+            
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Network error: \(error.localizedDescription)"
+                        self.alertTitle = "Network Error"
+                        self.alertMessage = error.localizedDescription
+                        self.showAlert = true
+                    }
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Server error"
+                        self.alertTitle = "Server Error"
+                        self.alertMessage = "Failed to load performer details"
+                        self.showAlert = true
+                    }
+                    return
+                }
+                
+                guard let data = data else {
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Data error"
+                        self.alertTitle = "Data Error"
+                        self.alertMessage = "Invalid data received from the server"
+                        self.showAlert = true
+                    }
+                    return
+                }
+                
+                do {
+                    let decodedResponse = try JSONDecoder().decode(DetailedPerformer.self, from: data)
+                    DispatchQueue.main.async {
+                        
+                        self.performer = decodedResponse
+                        // Call to fetchAverageRating should be here, after performer is set
+                        if let encodedName = self.performer?.name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) {
+                            self.fetchAverageRating(performerName: encodedName)
+                        }
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Decoding error: \(error.localizedDescription)"
+                        self.alertTitle = "Decoding Error"
+                        self.alertMessage = error.localizedDescription
+                        self.showAlert = true
+                    }
+                }
+            }.resume()
+        }
+        
+        private func fetchUserLastRating(artistId: String, username: String) {
+            guard let url = URL(string: "http://127.0.0.1:8000/api/performerrating/performer/\(artistId)") else {
+                print("Invalid URL for performer rating")
+                return
+            }
+            
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    print("Network error: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    print("Server error or invalid response for performer rating")
+                    return
+                }
+                
+                guard let data = data else {
+                    print("No data received for performer rating")
+                    return
+                }
+                
+                do {
+                    let decodedResponse = try JSONDecoder().decode(RatingResponse.self, from: data)
+                    if let lastRating = decodedResponse.data.filter({ $0.username == username }).last {
+                        DispatchQueue.main.async {
+                            // Here we parse the string to a Double
+                            self.userLastRating = Double(lastRating.rating)
+                        }
+                    }
+                } catch {
+                    print("Decoding error for performer rating: \(error)")
+                }
+            }.resume()
+        }
+        
+        private func fetchAverageRating(performerName: String) {
+            guard let url = URL(string: "http://127.0.0.1:8000/api/search/performer/\(performerName)") else {
+                print("Invalid URL for average rating")
+                self.errorMessage = "Invalid URL for average rating"
+                return
+            }
+            
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    print("Network error: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    print("Server error or invalid response for average rating")
+                    return
+                }
+                
+                guard let data = data else {
+                    print("No data received for average rating")
+                    return
+                }
+                
+                do {
+                    // Assuming the JSON structure is an array of performer ratings
+                    let decodedResponse = try JSONDecoder().decode([PerformerRating].self, from: data)
+                    if let firstPerformerRating = decodedResponse.first {
+                        DispatchQueue.main.async {
+                            // Here we parse the string to a Double
+                            if let averageRating = Double(firstPerformerRating.performer_ratings_avg_rating) {
+                                self.averageRating = averageRating
+                            } else {
+                                print("Failed to parse average rating to a Double")
+                            }
+                        }
+                    }
+                } catch {
+                    print("Decoding error for average rating: \(error)")
+                }
+            }.resume()
+        }
+        
+        private func getCurrentFormattedDate() -> String {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss" // Adjust the format to match your backend expectation
+            return dateFormatter.string(from: Date())
+        }
+        
+        
+        private func submitRating(for itemID: String, with rating: Int, username: String) {
+            let endpoint: String = "performerrating/"
+            
+            guard let url = URL(string: "http://127.0.0.1:8000/api/\(endpoint)") else {
+                self.errorMessage = "Invalid URL"
+                return
+            }
+            
+            let currentDate = getCurrentFormattedDate()
+            
+            let ratingData: [String: Any] = [
+                "artist_id": itemID,
+                "rating": rating,
+                "username": username,
+                "date_rated": currentDate // include the date
+            ]
+            
+            guard let jsonData = try? JSONSerialization.data(withJSONObject: ratingData) else {
+                self.errorMessage = "Error encoding data"
+                return
+            }
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.httpBody = jsonData
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        self.errorMessage = "Network error: \(error.localizedDescription)"
+                        self.alertTitle = "Error"
+                        self.alertMessage = "Network error: \(error.localizedDescription)"
+                        self.showAlert = true
+                        return
+                    }
+                    
+                    if let httpResponse = response as? HTTPURLResponse {
+                        if !(200...299).contains(httpResponse.statusCode) {
+                            self.errorMessage = "Server error: \(httpResponse.statusCode)"
+                            self.alertTitle = "Error"
+                            self.alertMessage = "Server error: \(httpResponse.statusCode)"
+                        } else {
+                            self.alertTitle = "Success"
+                            self.alertMessage = "Rating submitted successfully"
+                            self.selectedRating = rating // Update the rating state if you need to reflect it in the UI
+                            
+                            // Refresh the user's last rating and the average rating after submission
+                            if let performerName = self.performer?.name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) {
+                                self.fetchAverageRating(performerName: performerName)
+                            }
+                            self.fetchUserLastRating(artistId: itemID, username: username)
+                        }
+                        self.showAlert = true
+                    }
+                }
+            }.resume()
+        }
+    }
+    
+    
+
+
+    
+
 
 
     
     
     struct HomeView: View {
+        @EnvironmentObject var userSession: UserSession
         @State private var searchText: String = ""
         @State private var currentFilter: Filter = .all // Default filter is "All"
         @State private var showingSongSheet = false
@@ -340,6 +1516,8 @@ struct ContentView: View {
         @State private var showingPerformerSheet = false
         @State private var currentItemID: String?
         @State private var currentItemType: ItemType?
+        @State private var currentItemIdentifier: String?
+        @State private var currentItemImageUrl: String?
         @State private var albums: [Album] = []
         @State private var songs: [Song] = []
         @State private var performers: [Performer] = []
@@ -420,6 +1598,9 @@ struct ContentView: View {
                                 Button(action: {
                                     currentItemID = item.id
                                     currentItemType = item.itemType  // Set the item type
+                                    currentItemIdentifier = item.identifier
+                                    currentItemImageUrl = item.imageUrl
+
                                     switch currentItemType {
                                     case .performer:
                                         showingPerformerSheet = true
@@ -438,18 +1619,26 @@ struct ContentView: View {
                         }
                     }
                     .sheet(isPresented: $showingSongSheet) {
-                        if let itemType = currentItemType, let itemID = currentItemID {
+                        if let itemID = currentItemID {
+                            let userID = userSession.username
+                            let artistName = String(currentItemIdentifier?.dropFirst(6) ?? "no name")
+                            let image = currentItemImageUrl
                             
+                            SongView(userId: userID!, songId: itemID, artistName: artistName, imageUrl: image ?? "")
                         }
                     }
                     .sheet(isPresented: $showingPerformerSheet) {
-                        if let itemType = currentItemType, let itemID = currentItemID {
-                            PerformerView(artistId: currentItemID ?? "000")
+                        if let itemID = currentItemID, currentItemType == .performer {
+                            let userID = userSession.username
+                            PerformerView(userId: userID ?? "userIDNotFound", artistId: itemID)
                         }
                     }
                     .sheet(isPresented: $showingAlbumSheet) {
-                        if let itemType = currentItemType, let itemID = currentItemID {
-                            
+                        if let itemID = currentItemID, currentItemType == .album {
+                            let userID = userSession.username
+                            let artistName = String(currentItemIdentifier?.dropFirst(6) ?? "no name")
+
+                            AlbumView(userId: userID!, albumId: itemID, performerName: artistName)
                         }
                     }
                     
@@ -567,7 +1756,7 @@ struct ContentView: View {
         
         private func filteredItems() -> [FilterItem] {
             var items: [FilterItem] = []
-            
+            print("Number of performers: \(performers.count)")
             switch currentFilter {
                 case .songs:
                     items = songs.map { song in
@@ -1122,7 +2311,7 @@ struct ContentView: View {
 //                        .italic()
 //                        .padding(.horizontal, 20)
 //                        .multilineTextAlignment(.center)
-//                    
+//
 
 
                     // Editable user information fields

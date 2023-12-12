@@ -9,11 +9,11 @@ class UserSession: ObservableObject {
     
     static var mock: UserSession {
         let session = UserSession()
-        session.username = "MockUser"
-        session.email = "mockuser@example.com"
-        session.name = "John"
-        session.surname = "Doe"
-        session.password = "password123"
+        session.username = "ozaancelebi2"
+        session.email = "ozancelebi@gmail.com"
+        session.name = "Ozan"
+        session.surname = "Çelebi"
+        session.password = "Ozan1234."
         return session
     }
     
