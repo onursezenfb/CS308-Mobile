@@ -1510,7 +1510,7 @@ struct ContentView: View {
     struct HomeView: View {
         @EnvironmentObject var userSession: UserSession
         @State private var searchText: String = ""
-        @State private var currentFilter: Filter = .all // Default filter is "All"
+        @State private var currentFilter: Filter = .songs // Default filter is "All"
         @State private var showingSongSheet = false
         @State private var showingAlbumSheet = false
         @State private var showingPerformerSheet = false
@@ -1526,7 +1526,7 @@ struct ContentView: View {
         @State private var tempperformers: [Performer] = []
 
         enum Filter: String, CaseIterable {
-            case all = "All"
+
             case songs = "Songs"
             case albums = "Albums"
             case performers = "Performers"
@@ -1704,8 +1704,6 @@ struct ContentView: View {
                     return URL(string: "\(baseURL)/album/\(searchText)")!
                 case .performers:
                     return URL(string: "\(baseURL)/performer/\(searchText)")!
-                case .all:
-                    return URL(string: "\(baseURL)/\(searchText)")!
                 }
             }
             
@@ -1738,12 +1736,6 @@ struct ContentView: View {
                                 self.tempalbums = try JSONDecoder().decode([Album].self, from: data)
                             } catch {
                                 print("Error decoding albums JSON: \(error)")
-                            }
-                        case .all:
-                            do {
-                                combinedResults = try JSONDecoder().decode([SearchResult].self, from: data)
-                            } catch {
-                                print("Error decoding combined JSON: \(error)")
                             }
                         }
                     }
