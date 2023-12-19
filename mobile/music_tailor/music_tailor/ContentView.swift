@@ -2208,6 +2208,7 @@ struct ContentView: View {
         @State private var language: String = ""
         @State private var subscription: String = ""
         @State private var rateLimit: String = ""
+        @State private var navigateToPremium = false
         
         private let dateFormatter: DateFormatter = {
             let formatter = DateFormatter()
@@ -2265,6 +2266,23 @@ struct ContentView: View {
                     .padding(.bottom, 10)
                     .background(Color.pink.opacity(0.15))
                    
+                    NavigationLink(
+                        destination: PremiumView(username: userSession.username ?? "User"),
+                        isActive: $navigateToPremium
+                    ) {
+                                        Button(action: {
+                                            navigateToPremium = true
+                                        }) {
+                                            Text("Be a Premium Member!")
+                                                .font(.headline)
+                                                .foregroundColor(.white)
+                                                .padding()
+                                                .frame(maxWidth: .infinity)
+                                                .background(Color.pink)
+                                                .cornerRadius(10)
+                                                .padding(.horizontal, 20)
+                                        }
+                                    }
                     
                      if let image = selectedImage ?? profileImage {
                         Image(uiImage: image)

@@ -17,6 +17,10 @@
 		93BBA3142B1BAA540026F9A9 /* AddFriendView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93BBA3132B1BAA540026F9A9 /* AddFriendView.swift */; };
 		93CBA1E82B1F3D9C0062A920 /* ReccomendationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93CBA1E72B1F3D9C0062A920 /* ReccomendationView.swift */; };
 		93CBA1EA2B1F781F0062A920 /* EnergyDanceabilityRecommendationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93CBA1E92B1F781F0062A920 /* EnergyDanceabilityRecommendationView.swift */; };
+		93F6758E2B3229A7003C2735 /* PremiumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F6758D2B3229A7003C2735 /* PremiumView.swift */; };
+		93F675902B323934003C2735 /* GoldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F6758F2B323934003C2735 /* GoldView.swift */; };
+		93F675922B323CBD003C2735 /* SilverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F675912B323CBD003C2735 /* SilverView.swift */; };
+		93F675942B32410C003C2735 /* PurchaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F675932B32410C003C2735 /* PurchaseView.swift */; };
 		AB29E1882B21D302003D37A4 /* ObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB29E1872B21D302003D37A4 /* ObservableObject.swift */; };
 		AB88A0812AF3BC1000160AD2 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB88A0802AF3BC1000160AD2 /* LoginView.swift */; };
 		AB88A0832AF3BC1200160AD2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB88A0822AF3BC1200160AD2 /* Assets.xcassets */; };
@@ -55,6 +59,10 @@
 		93BBA3132B1BAA540026F9A9 /* AddFriendView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFriendView.swift; sourceTree = "<group>"; };
 		93CBA1E72B1F3D9C0062A920 /* ReccomendationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReccomendationView.swift; sourceTree = "<group>"; };
 		93CBA1E92B1F781F0062A920 /* EnergyDanceabilityRecommendationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnergyDanceabilityRecommendationView.swift; sourceTree = "<group>"; };
+		93F6758D2B3229A7003C2735 /* PremiumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumView.swift; sourceTree = "<group>"; };
+		93F6758F2B323934003C2735 /* GoldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoldView.swift; sourceTree = "<group>"; };
+		93F675912B323CBD003C2735 /* SilverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilverView.swift; sourceTree = "<group>"; };
+		93F675932B32410C003C2735 /* PurchaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseView.swift; sourceTree = "<group>"; };
 		AB29E1872B21D302003D37A4 /* ObservableObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObservableObject.swift; sourceTree = "<group>"; };
 		AB88A07B2AF3BC1000160AD2 /* music_tailor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = music_tailor.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB88A07E2AF3BC1000160AD2 /* music_tailorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = music_tailorApp.swift; sourceTree = "<group>"; };
@@ -134,6 +142,10 @@
 				93CBA1E92B1F781F0062A920 /* EnergyDanceabilityRecommendationView.swift */,
 				04F245DD2B24DDFA00D283F8 /* EnergeticMix.swift */,
 				04F245DB2B24DDCF00D283F8 /* MoodyMix.swift */,
+				93F6758D2B3229A7003C2735 /* PremiumView.swift */,
+				93F6758F2B323934003C2735 /* GoldView.swift */,
+				93F675912B323CBD003C2735 /* SilverView.swift */,
+				93F675932B32410C003C2735 /* PurchaseView.swift */,
 			);
 			path = music_tailor;
 			sourceTree = "<group>";
@@ -296,6 +308,8 @@
 				046D4F5B2B26080100937551 /* RatingsLineChartView.swift in Sources */,
 				04CA099A2B26369200688B5F /* ArtistAnalysisView.swift in Sources */,
 				93CBA1EA2B1F781F0062A920 /* EnergyDanceabilityRecommendationView.swift in Sources */,
+				93F675942B32410C003C2735 /* PurchaseView.swift in Sources */,
+				93F675922B323CBD003C2735 /* SilverView.swift in Sources */,
 				93CBA1E82B1F3D9C0062A920 /* ReccomendationView.swift in Sources */,
 				9351CF432AF4CF440098CD8F /* music_tailorApp.swift in Sources */,
 				ABE43CAA2AFCD84C00B53FD5 /* ContentView.swift in Sources */,
@@ -303,7 +317,9 @@
 				04F245DE2B24DDFA00D283F8 /* EnergeticMix.swift in Sources */,
 				AB88A0812AF3BC1000160AD2 /* LoginView.swift in Sources */,
 				046209462B262671004DF7ED /* FavoriteSongsAnalysisView.swift in Sources */,
+				93F675902B323934003C2735 /* GoldView.swift in Sources */,
 				046D4F5D2B260F0900937551 /* TopAlbumsAnalysisView.swift in Sources */,
+				93F6758E2B3229A7003C2735 /* PremiumView.swift in Sources */,
 				93BBA3142B1BAA540026F9A9 /* AddFriendView.swift in Sources */,
 				AB88A0A92AF3BC4B00160AD2 /* SignUpView.swift in Sources */,
 				AB29E1882B21D302003D37A4 /* ObservableObject.swift in Sources */,
