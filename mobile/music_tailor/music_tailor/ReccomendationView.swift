@@ -9,9 +9,8 @@
 
 import SwiftUI
 
-
-
 struct RecommendationView: View {
+    @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject var userSession: UserSession
     @State private var recommendedSongs: [RecommendedSong] = []
 
@@ -25,7 +24,7 @@ struct RecommendationView: View {
                 Text("Recommendations")
                     .font(Font.system(size: 30, design: .rounded))
                     .bold()
-                    .foregroundColor(.pink)
+                    .foregroundColor(themeManager.themeColor)
                     .frame(width: 300, height: 50, alignment: .leading)
 
                 List(recommendedSongs, id: \.song.song_id) { recommendedSong in

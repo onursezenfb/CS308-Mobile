@@ -14,6 +14,7 @@ struct AlbumAnalysis: Identifiable, Codable {
 }
 
 struct TopAlbumsAnalysisView: View {
+    @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject var userSession: UserSession
     @State private var selectedEra: String = "20s" // Default era
     @State private var topAlbums: [AlbumAnalysis] = []
@@ -33,12 +34,12 @@ struct TopAlbumsAnalysisView: View {
                 Text("Albums by Era")
                     .font(Font.system(size: 36, design: .rounded))
                     .bold()
-                    .foregroundColor(.pink)
+                    .foregroundColor(themeManager.themeColor)
             }
             VStack(alignment: .leading) {
                 Text("Select an Era")
                     .font(.headline)
-                    .foregroundColor(.pink)
+                    .foregroundColor(themeManager.themeColor)
                     .padding([.top, .leading]) // Add padding to top and leading edges
 
                 Picker("Select Era", selection: $selectedEra) {

@@ -15,6 +15,7 @@ struct DailyAverageRating: Identifiable {
 }
 
 struct RatingsLineChartView: View {
+    @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject var userSession: UserSession // Access user session
     @State private var dailyAverageRatings: [DailyAverageRating] = []
     @State private var showAlert = false
@@ -32,7 +33,7 @@ struct RatingsLineChartView: View {
                 Text("Average Ratings")
                     .font(Font.system(size: 36, design: .rounded))
                     .bold()
-                    .foregroundColor(.pink)
+                    .foregroundColor(themeManager.themeColor)
             }
             // Use Chart view to create a line chart
             Chart(dailyAverageRatings) { rating in

@@ -6,6 +6,7 @@ class UserSession: ObservableObject {
     @Published var name: String?
     @Published var surname: String?
     @Published var password: String?
+    @Published var theme: String?
     
     static var mock: UserSession {
         let session = UserSession()
@@ -14,6 +15,7 @@ class UserSession: ObservableObject {
         session.name = "Ozan"
         session.surname = "Çelebi"
         session.password = "Ozan1234."
+        session.theme = "Pink"
         return session
     }
     

@@ -22,6 +22,7 @@ struct EnergeticRecommendedSong {
 }
 
 struct EnergeticMix: View {
+    @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject var userSession: UserSession
     @State private var recommendedSongs: [EnergeticRecommendedSong] = []
 
@@ -35,7 +36,7 @@ struct EnergeticMix: View {
             Text("Recommendations")
                 .font(Font.system(size: 30, design: .rounded))
                 .bold()
-                .foregroundColor(.pink)
+                .foregroundColor(themeManager.themeColor)
                 .frame(width: 300, alignment: .leading)
 
             List(recommendedSongs, id: \.song.song_id) { recommendedSong in

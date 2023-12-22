@@ -5,7 +5,7 @@ import SwiftUI
 
 
 struct LoginView: View {
-    
+    @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject var userSession: UserSession
     @State private var email = ""
     @State private var password = ""
@@ -20,7 +20,7 @@ struct LoginView: View {
         NavigationView{
             
             ZStack{
-                Color.pink
+                themeManager.themeColor
                     .ignoresSafeArea()
                 Circle()
                     .scale(1.7)
@@ -36,7 +36,7 @@ struct LoginView: View {
                     Text("Music Tailor")
                         .font(Font.system(size: 36, design: .rounded))
                         .bold()
-                        .foregroundColor(.pink)
+                        .foregroundColor(themeManager.themeColor)
                         .frame(width: 300, height: 50, alignment: .leading)
                     
                     
@@ -108,7 +108,7 @@ struct LoginView: View {
                             // function
                         }) {
                             Text("Forgot your password?")
-                                .foregroundColor(.pink)
+                                .foregroundColor(themeManager.themeColor)
                                 .bold()
                             
                         }
@@ -135,7 +135,7 @@ struct LoginView: View {
                         Text("Login")
                             .foregroundColor(.white)
                             .frame(width: 300, height: 50)
-                            .background(Color.pink)
+                            .background(themeManager.themeColor)
                             .cornerRadius(10)
                     }
                     
@@ -145,7 +145,7 @@ struct LoginView: View {
                         
                         NavigationLink(destination: SignUpView(email: "").navigationBarBackButtonHidden(true)) {
                             Text("Sign up")
-                                .foregroundColor(.pink)
+                                .foregroundColor(themeManager.themeColor)
                                 .bold()
                         }
                         

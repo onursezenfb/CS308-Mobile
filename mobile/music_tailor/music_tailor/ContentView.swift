@@ -6,8 +6,7 @@ enum ItemType {
 struct ContentView: View {
     @EnvironmentObject var userSession: UserSession
     @State private var selectedTab: Int = 0
-
-    
+    @EnvironmentObject var themeManager: ThemeManager
     
     var body: some View {
         NavigationView {
@@ -50,7 +49,7 @@ struct ContentView: View {
                             }
                             .tag(4)
                     }
-                    .accentColor(.pink)
+                    .accentColor(themeManager.themeColor)
                 }
             }
     }
@@ -1509,6 +1508,7 @@ struct ContentView: View {
     
     struct HomeView: View {
         @EnvironmentObject var userSession: UserSession
+        @EnvironmentObject var themeManager: ThemeManager
         @State private var searchText: String = ""
         @State private var currentFilter: Filter = .songs // Default filter is "All"
         @State private var showingSongSheet = false
@@ -1566,7 +1566,7 @@ struct ContentView: View {
                                 Text(filter.rawValue)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 8)
-                                    .background(currentFilter == filter ? Color.pink : Color.gray.opacity(0.5))
+                                    .background(currentFilter == filter ? themeManager.themeColor : Color.gray.opacity(0.5))
                                     .foregroundColor(.white)
                                     .cornerRadius(8)
                             }
@@ -1897,6 +1897,7 @@ struct ContentView: View {
     
     struct UploadMusicFormView: View {
         @Environment(\.presentationMode) var presentationMode
+        @EnvironmentObject var themeManager: ThemeManager
         @State private var spotifyLink: String = ""
         @State private var showAlert = false
         @State private var alertMessage = ""
@@ -1919,14 +1920,14 @@ struct ContentView: View {
                         Text("Music Tailor")
                             .font(Font.system(size: 36, design: .rounded))
                             .bold()
-                            .foregroundColor(.pink)
+                            .foregroundColor(themeManager.themeColor)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)
                         
                         Text("Enter Spotify Link Below")
                             .font(Font.system(size: 20, design: .rounded))
                             .bold()
-                            .foregroundColor(.pink)
+                            .foregroundColor(themeManager.themeColor)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)
                         
@@ -1941,7 +1942,7 @@ struct ContentView: View {
                                 }
                                 .padding()
                                 .frame(maxWidth: .infinity)
-                                .background(Color.pink)
+                                .background(themeManager.themeColor)
                                 .foregroundColor(.white)
                                 .cornerRadius(8)
                             }
@@ -1956,7 +1957,7 @@ struct ContentView: View {
                             })
                         }
                     }
-                    .background(Color.pink.opacity(0.15))
+                    .background(themeManager.themeColor.opacity(0.15))
                 }
             }
         }
@@ -2027,6 +2028,7 @@ struct ContentView: View {
     
 
     struct PlaylistsView: View {
+        @EnvironmentObject var themeManager: ThemeManager
         // Define a two-column grid layout
         private var gridItems = [GridItem(.flexible()), GridItem(.flexible())]
 
@@ -2044,7 +2046,7 @@ struct ContentView: View {
                             Text("Music")
                                 .font(Font.system(size: 36, design: .rounded))
                                 .bold()
-                                .foregroundColor(.pink)
+                                .foregroundColor(themeManager.themeColor)
                         }
                         .padding(.bottom, 5) // Add some top padding to the title
                         HStack {
@@ -2143,6 +2145,8 @@ struct ContentView: View {
     
     
     struct FriendsView: View {
+        @EnvironmentObject var themeManager: ThemeManager
+        
         var body: some View {
             NavigationView {
                 ZStack {
@@ -2159,7 +2163,7 @@ struct ContentView: View {
                             Text("Friends")
                                 .font(Font.system(size: 36, design: .rounded))
                                 .bold()
-                                .foregroundColor(.pink)
+                                .foregroundColor(themeManager.themeColor)
                         }
                         .padding(.bottom, 20)
                         
@@ -2169,11 +2173,11 @@ struct ContentView: View {
                                 .foregroundColor(.white)
                                 .padding()
                                 .frame(minWidth: 0, maxWidth: .infinity)
-                                .background(LinearGradient(gradient: Gradient(colors: [.pink, .red]), startPoint: .topLeading, endPoint: .bottomTrailing))
+                                .background(themeGradient)
                                 .cornerRadius(10)
                         }
                         .padding(.bottom, 10)
-                        
+                                        
                         Button(action: {
                             // Action for "Manage Your Friends" button
                         }) {
@@ -2182,7 +2186,7 @@ struct ContentView: View {
                                 .foregroundColor(.white)
                                 .padding()
                                 .frame(minWidth: 0, maxWidth: .infinity)
-                                .background(LinearGradient(gradient: Gradient(colors: [.pink, .red]), startPoint: .topLeading, endPoint: .bottomTrailing))
+                                .background(themeGradient)
                                 .cornerRadius(10)
                         }
                         
@@ -2193,12 +2197,18 @@ struct ContentView: View {
                 .navigationBarHidden(true) // Optionally hide the navigation bar if you want
             }
         }
+        
+        var themeGradient: LinearGradient {
+            LinearGradient(gradient: Gradient(colors: [themeManager.themeColor, themeManager.themeColor.opacity(0.7)]), startPoint: .topLeading, endPoint: .bottomTrailing)
+        }
+
     }
 
     
     
     
     struct ProfileView: View {
+        @EnvironmentObject var themeManager: ThemeManager
         @EnvironmentObject var userSession: UserSession
         @State private var profileImage: UIImage? = nil
         @State private var selectedImage: UIImage?
@@ -2208,7 +2218,9 @@ struct ContentView: View {
         @State private var language: String = ""
         @State private var subscription: String = ""
         @State private var rateLimit: String = ""
-        @State private var navigateToPremium = false
+        @State private var theme: String = ""
+        @State private var showAlert = false
+        @State private var alertMessage = ""
         
         private let dateFormatter: DateFormatter = {
             let formatter = DateFormatter()
@@ -2231,7 +2243,7 @@ struct ContentView: View {
                             
                             ZStack {
                                 RoundedRectangle(cornerRadius: 10)
-                                    .foregroundColor(Color.pink.opacity(0.7))
+                                    .foregroundColor(themeManager.themeColor.opacity(0.7))
                                     .frame(width: 40, height: 40)
                                 Button(action: {
                                     showingSettings.toggle()
@@ -2252,7 +2264,7 @@ struct ContentView: View {
                             Text("Music Tailor")
                                 .font(Font.system(size: 32, design: .rounded))
                                 .bold()
-                                .foregroundColor(.pink)
+                                .foregroundColor(themeManager.themeColor)
                                 .padding(.leading, 20)
                             VStack {
                                 Text("Profile")
@@ -2264,25 +2276,7 @@ struct ContentView: View {
                         }
                     }
                     .padding(.bottom, 10)
-                    .background(Color.pink.opacity(0.15))
-                   
-                    NavigationLink(
-                        destination: PremiumView(username: userSession.username ?? "User"),
-                        isActive: $navigateToPremium
-                    ) {
-                                        Button(action: {
-                                            navigateToPremium = true
-                                        }) {
-                                            Text("Be a Premium Member!")
-                                                .font(.headline)
-                                                .foregroundColor(.white)
-                                                .padding()
-                                                .frame(maxWidth: .infinity)
-                                                .background(Color.pink)
-                                                .cornerRadius(10)
-                                                .padding(.horizontal, 20)
-                                        }
-                                    }
+                    .background(themeManager.themeColor.opacity(0.15))
                     
                      if let image = selectedImage ?? profileImage {
                         Image(uiImage: image)
@@ -2295,7 +2289,7 @@ struct ContentView: View {
                         Image(systemName: "person")
                             .padding(.top, 50)
                             .font(.system(size: 120))
-                            .foregroundColor(Color.pink.opacity(0.15))
+                            .foregroundColor(themeManager.themeColor.opacity(0.15))
                             .aspectRatio(contentMode: .fill)
                             .frame(width: 120, height: 120)
                             .clipShape(Circle())
@@ -2312,7 +2306,7 @@ struct ContentView: View {
                         .padding(.bottom, 1)
                     
                     Text("@\(userSession.username ?? "")")
-                        .foregroundColor(.pink)
+                        .foregroundColor(themeManager.themeColor)
                     
                     
                     // Description text
@@ -2323,50 +2317,73 @@ struct ContentView: View {
 //                        .multilineTextAlignment(.center)
 //
 
-
-                    // Editable user information fields
-                    Group {
-                        TextField("Email", text: $email)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                    ScrollView {
+                        // Editable user information fields
+                        Group {
+                            TextField("Email", text: $email)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, -10)
+                            DatePicker("Date of Birth", selection: $dateOfBirth, displayedComponents: .date)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, -10)
+                            TextField("Language", text: $language)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, -10)
+                            HStack {
+                                Text("Subscription:")
+                                    .bold()
+                                Text(subscription)
+                                Spacer()
+                            }
                             .padding(.horizontal, 20)
                             .padding(.vertical, -10)
-                        DatePicker("Date of Birth", selection: $dateOfBirth, displayedComponents: .date)
+                            HStack {
+                                Text("Rate Limit:")
+                                    .bold()
+                                Text(rateLimit)
+                                Spacer()
+                            }
                             .padding(.horizontal, 20)
                             .padding(.vertical, -10)
-                        TextField("Language", text: $language)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, -10)
-                        TextField("Subscription", text: $subscription)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, -10)
-                        TextField("Rate Limit", text: $rateLimit)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, -10)
+                            .padding(.bottom, 10)
+                        }
+                        .padding()
+                        
+                        //Spacer()
+                        
+                        // Update Button
+                        Button(action: updateUserInformation) {
+                            Text("Update")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(themeManager.themeColor)
+                                .cornerRadius(10)
+                        }
+                        .padding(.horizontal)
+                        
+                        
+                        .alert(isPresented: $showAlert) {
+                            Alert(
+                                title: Text("Update Successful"),
+                                message: Text(alertMessage),
+                                dismissButton: .default(Text("OK"))
+                            )
+                        }
+                        .padding(.bottom, 20)
+                        .onAppear(perform: fetchUserData)
+                        
+                        Spacer()
                     }
-                    .padding()
-
-                    Spacer()
-                    
-                    // Update Button
-                    Button(action: updateUserInformation) {
-                        Text("Update")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.pink)
-                            .cornerRadius(10)
-                    }
-                    .padding(.horizontal)
-                    
-                    Spacer()
                 }
                 .padding(.bottom, 20)
                 .onAppear(perform: fetchUserData)
-                
+                .onChange(of: userSession.theme) { _ in
+                    fetchUserData() // Fetch data when the theme changes
+                }
             }
         }
         
@@ -2413,6 +2430,7 @@ struct ContentView: View {
                 self.language = data["language"] as? String ?? ""
                 self.subscription = data["subscription"] as? String ?? ""
                 self.rateLimit = data["rate_limit"] as? String ?? ""
+                self.theme = data["theme"] as? String ?? ""
 
                 if let dobString = data["date_of_birth"] as? String, let dob = self.dateFormatter.date(from: dobString) {
                     self.dateOfBirth = dob
@@ -2422,49 +2440,54 @@ struct ContentView: View {
 
         
         private func updateUserInformation() {
-            guard let url = URL(string: "http://127.0.0.1:8000/api/users/update") else {
+            guard let url = URL(string: "http://127.0.0.1:8000/api/users/\(userSession.username ?? "")") else {
                 print("Invalid URL")
                 return
             }
 
             var request = URLRequest(url: url)
-            request.httpMethod = "POST"
+            request.httpMethod = "PUT"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             
             let updatedUser = User(
                 username: userSession.username,
                 email: email,
-                email_verified_at: nil, // You may need to handle this depending on your backend requirements
+                email_verified_at: nil, // Handle this depending on your backend requirements
                 name: userSession.name,
                 surname: userSession.surname,
-                password: nil, // You may need to handle password updates separately for security reasons
+                password: nil, // Handle password updates separately for security reasons
                 date_of_birth: dateFormatter.string(from: dateOfBirth),
                 language: language,
                 subscription: subscription,
-                rate_limit: rateLimit
+                rate_limit: rateLimit,
+                theme: theme
             )
             
             do {
                 let jsonData = try JSONEncoder().encode(updatedUser)
                 request.httpBody = jsonData
                 
-                let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                let task = URLSession.shared.dataTask(with: request) { [self] data, response, error in
                     if let error = error {
                         print("Error updating user data: \(error)")
                         return
                     }
                     
-                    guard let httpResponse = response as? HTTPURLResponse,
-                          httpResponse.statusCode == 200 else {
+                    guard let httpResponse = response as? HTTPURLResponse else {
                         print("Error: Invalid response from server")
                         return
                     }
                     
-                    // Handle the successful response here
-                    if let data = data {
-                        if let responseString = String(data: data, encoding: .utf8) {
-                            print("Response String: \(responseString)")
+                    if httpResponse.statusCode == 200 {
+                        // Update is successful
+                        DispatchQueue.main.async {
+                            self.alertMessage = "Your personal information is successfully updated!"
+                            self.showAlert = true
+                            self.fetchUserData()
                         }
+                    } else {
+                        print("Error: Update failed with status code \(httpResponse.statusCode)")
+                        // Handle different status codes or server responses as needed
                     }
                 }
                 task.resume()
@@ -2472,6 +2495,8 @@ struct ContentView: View {
                 print("Error encoding user data")
             }
         }
+
+
     }
     
     // User struct for encoding
@@ -2486,39 +2511,43 @@ struct ContentView: View {
         var language: String
         var subscription: String
         var rate_limit: String
+        var theme: String?
     }
         
     
     
     
     struct SettingsView: View {
+        @EnvironmentObject var themeManager: ThemeManager
+        @EnvironmentObject var userSession: UserSession
         @State private var navigateToLogin = false
         @State private var showingImagePicker = false
-        @Binding var profileImage: UIImage? //
-        
-        
+        @Binding var profileImage: UIImage?
+        @State private var navigateToPremium = false
+        @State private var showingChangeThemeView = false
+
         
         var body: some View {
             NavigationView {
                 ZStack {
                     // Pink ombre circles in each corner
                     Circle()
-                        .fill(PinkGradient)
+                        .fill(currentThemeGradient)
                         .frame(width: 300, height: 300)
                         .position(x: 0, y: 0) // Top left corner
                     
                     Circle()
-                        .fill(PinkGradient)
+                        .fill(currentThemeGradient)
                         .frame(width: 300, height: 300)
                         .position(x: UIScreen.main.bounds.width, y: 0) // Top right corner
                     
                     Circle()
-                        .fill(PinkGradient)
+                        .fill(currentThemeGradient)
                         .frame(width: 300, height: 300)
                         .position(x: 0, y: UIScreen.main.bounds.height) // Bottom left corner
                     
                     Circle()
-                        .fill(PinkGradient)
+                        .fill(currentThemeGradient)
                         .frame(width: 300, height: 300)
                         .position(x: UIScreen.main.bounds.width, y: UIScreen.main.bounds.height) // Bottom right corner
                     // Content of your view
@@ -2530,7 +2559,7 @@ struct ContentView: View {
                                 Text("Tailor")
                                     .font(Font.system(size: 36, design: .rounded))
                                     .bold()
-                                    .foregroundColor(.pink)
+                                    .foregroundColor(themeManager.themeColor)
                                 Text("Your")
                                     .font(.largeTitle)
                                     .bold()
@@ -2550,6 +2579,26 @@ struct ContentView: View {
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding()
                         
+                        // Hidden NavigationLink that listens to navigateToPremium
+                        NavigationLink(
+                            destination: PremiumView(username: userSession.username ?? "User"),
+                            isActive: $navigateToPremium
+                        ) {
+                            EmptyView()
+                        }
+
+                        // Button that sets navigateToPremium to true
+                        Button(action: {
+                            navigateToPremium = true
+                        }) {
+                            Text("See Subscription Plans!")
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(themeManager.themeColor)
+                                .cornerRadius(10)
+                        }
+                        .padding(.top, 20)
+                
                         Button(action: {
                             // Show the image picker when the button is pressed
                             showingImagePicker.toggle()
@@ -2557,7 +2606,7 @@ struct ContentView: View {
                             Text("Change Profile Picture")
                                 .foregroundColor(.white)
                                 .padding()
-                                .background(Color.pink)
+                                .background(themeManager.themeColor)
                                 .cornerRadius(10)
                         }
                         .padding(.top, 20)
@@ -2567,9 +2616,12 @@ struct ContentView: View {
                         
                         
                         Button("Change Theme") {
-                            // Action for Change Theme
+                           showingChangeThemeView = true
                         }
                         .buttonStyle(SettingsButtonStyle())
+                        .sheet(isPresented: $showingChangeThemeView) {
+                            ChangeThemeView()
+                        }
                         
                         Button("Limit Your Activity") {
                             // Action for Limit Your Activity
@@ -2595,7 +2647,7 @@ struct ContentView: View {
                             Text("Log Out")
                                 .foregroundColor(.white)
                                 .padding()
-                                .background(Color.pink)
+                                .background(themeManager.themeColor)
                                 .cornerRadius(10)
                         }
                         .padding(.top, 20)
@@ -2603,19 +2655,20 @@ struct ContentView: View {
                         
                         Spacer()
                     }
-                    .background(.pink.opacity(0.1))
+                    .background(themeManager.themeColor.opacity(0.1))
                 }
                 
             }
             .navigationBarTitle(Text(""), displayMode: .inline) // Add this line to hide the default navigation title
             
-            var PinkGradient: LinearGradient {
-                LinearGradient(gradient: Gradient(colors: [Color.pink, Color.pink.opacity(0)]), startPoint: .topLeading, endPoint: .bottomTrailing)
+            var currentThemeGradient: LinearGradient {
+                LinearGradient(gradient: Gradient(colors: [themeManager.themeColor, themeManager.themeColor.opacity(0)]), startPoint: .topLeading, endPoint: .bottomTrailing)
             }
         }
     }
+    
     struct SettingsButtonStyle: ButtonStyle {
-        
+        @EnvironmentObject var themeManager: ThemeManager
         func makeBody(configuration: Self.Configuration) -> some View {
             
             configuration.label
@@ -2624,7 +2677,7 @@ struct ContentView: View {
             
                 .padding()
             
-                .background(Color.pink)
+                .background(themeManager.themeColor)
             
                 .cornerRadius(8)
             

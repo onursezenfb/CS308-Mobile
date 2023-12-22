@@ -22,6 +22,7 @@ struct MoodyRecommendedSong {
 }
 
 struct MoodyMix: View {
+    @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject var userSession: UserSession
     @State private var recommendedSongs: [MoodyRecommendedSong] = []
 
@@ -35,7 +36,7 @@ struct MoodyMix: View {
             Text("Recommendations")
                 .font(.title)
                 .bold()
-                .foregroundColor(.pink)
+                .foregroundColor(themeManager.themeColor)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             List(recommendedSongs, id: \.song.song_id) { recommendedSong in

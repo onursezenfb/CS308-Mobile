@@ -9,10 +9,18 @@ import SwiftUI
 
 @main
 struct music_tailorApp: App {
+    // Create an instance of ThemeManager
+    var themeManager = ThemeManager()
+
+    // Existing UserSession instance (if already declared)
+    var userSession = UserSession()
+
     var body: some Scene {
         WindowGroup {
             LoginView()
-                .environmentObject(UserSession())
+                .environmentObject(userSession) // Continue providing UserSession
+                .environmentObject(themeManager) // Provide ThemeManager as an environment object
         }
     }
 }
+

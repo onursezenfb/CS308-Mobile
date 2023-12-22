@@ -9,6 +9,7 @@ import SwiftUI
 
 struct AddFriendView: View {
     @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var themeManager: ThemeManager
     @State private var searchText = ""
 
     var body: some View {
@@ -21,7 +22,7 @@ struct AddFriendView: View {
                         Image(systemName: "arrow.left")
                         Text("Back")
                     }
-                    .foregroundColor(.pink)
+                    .foregroundColor(themeManager.themeColor)
                     .padding()
                 }
                 Spacer()
@@ -31,7 +32,7 @@ struct AddFriendView: View {
                 .font(.largeTitle)
                 .bold()
                 .padding()
-                .foregroundColor(.pink)
+                .foregroundColor(themeManager.themeColor)
 
             SearchBar(text: $searchText)
                 .padding()

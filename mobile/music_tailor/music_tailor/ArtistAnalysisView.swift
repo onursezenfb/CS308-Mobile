@@ -15,6 +15,7 @@ struct PerformerRating: Identifiable {
 }
 
 struct ArtistAnalysisView: View {
+    @EnvironmentObject var themeManager: ThemeManager
     @State private var performerNamesInput: String = ""
     @State private var performerRatings: [PerformerRating] = []
     @State private var isLoading = false
@@ -33,7 +34,7 @@ struct ArtistAnalysisView: View {
                 Text("Artists")
                     .font(Font.system(size: 36, design: .rounded))
                     .bold()
-                    .foregroundColor(.pink)
+                    .foregroundColor(themeManager.themeColor)
             }
             
             // Description Text
@@ -63,7 +64,7 @@ struct ArtistAnalysisView: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.pink)
+                    .background(themeManager.themeColor)
                     .cornerRadius(10)
             }
             .padding(.horizontal)

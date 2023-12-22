@@ -10,6 +10,8 @@
 		046209462B262671004DF7ED /* FavoriteSongsAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046209452B262671004DF7ED /* FavoriteSongsAnalysisView.swift */; };
 		046D4F5B2B26080100937551 /* RatingsLineChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046D4F5A2B26080100937551 /* RatingsLineChartView.swift */; };
 		046D4F5D2B260F0900937551 /* TopAlbumsAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046D4F5C2B260F0900937551 /* TopAlbumsAnalysisView.swift */; };
+		047454302B35FBB80065A4CC /* ChangeThemeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0474542F2B35FBB80065A4CC /* ChangeThemeView.swift */; };
+		047454322B35FD460065A4CC /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047454312B35FD460065A4CC /* ThemeManager.swift */; };
 		04CA099A2B26369200688B5F /* ArtistAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04CA09992B26369200688B5F /* ArtistAnalysisView.swift */; };
 		04F245DC2B24DDCF00D283F8 /* MoodyMix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F245DB2B24DDCF00D283F8 /* MoodyMix.swift */; };
 		04F245DE2B24DDFA00D283F8 /* EnergeticMix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F245DD2B24DDFA00D283F8 /* EnergeticMix.swift */; };
@@ -53,6 +55,8 @@
 		046209452B262671004DF7ED /* FavoriteSongsAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteSongsAnalysisView.swift; sourceTree = "<group>"; };
 		046D4F5A2B26080100937551 /* RatingsLineChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingsLineChartView.swift; sourceTree = "<group>"; };
 		046D4F5C2B260F0900937551 /* TopAlbumsAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopAlbumsAnalysisView.swift; sourceTree = "<group>"; };
+		0474542F2B35FBB80065A4CC /* ChangeThemeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangeThemeView.swift; sourceTree = "<group>"; };
+		047454312B35FD460065A4CC /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
 		04CA09992B26369200688B5F /* ArtistAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtistAnalysisView.swift; sourceTree = "<group>"; };
 		04F245DB2B24DDCF00D283F8 /* MoodyMix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodyMix.swift; sourceTree = "<group>"; };
 		04F245DD2B24DDFA00D283F8 /* EnergeticMix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnergeticMix.swift; sourceTree = "<group>"; };
@@ -133,6 +137,7 @@
 				AB88A0A82AF3BC4B00160AD2 /* SignUpView.swift */,
 				AB29E1872B21D302003D37A4 /* ObservableObject.swift */,
 				ABE43CA92AFCD84C00B53FD5 /* ContentView.swift */,
+				047454312B35FD460065A4CC /* ThemeManager.swift */,
 				93BBA3132B1BAA540026F9A9 /* AddFriendView.swift */,
 				046D4F5A2B26080100937551 /* RatingsLineChartView.swift */,
 				046D4F5C2B260F0900937551 /* TopAlbumsAnalysisView.swift */,
@@ -146,6 +151,7 @@
 				93F6758F2B323934003C2735 /* GoldView.swift */,
 				93F675912B323CBD003C2735 /* SilverView.swift */,
 				93F675932B32410C003C2735 /* PurchaseView.swift */,
+				0474542F2B35FBB80065A4CC /* ChangeThemeView.swift */,
 			);
 			path = music_tailor;
 			sourceTree = "<group>";
@@ -312,8 +318,10 @@
 				93F675922B323CBD003C2735 /* SilverView.swift in Sources */,
 				93CBA1E82B1F3D9C0062A920 /* ReccomendationView.swift in Sources */,
 				9351CF432AF4CF440098CD8F /* music_tailorApp.swift in Sources */,
+				047454322B35FD460065A4CC /* ThemeManager.swift in Sources */,
 				ABE43CAA2AFCD84C00B53FD5 /* ContentView.swift in Sources */,
 				04F245DC2B24DDCF00D283F8 /* MoodyMix.swift in Sources */,
+				047454302B35FBB80065A4CC /* ChangeThemeView.swift in Sources */,
 				04F245DE2B24DDFA00D283F8 /* EnergeticMix.swift in Sources */,
 				AB88A0812AF3BC1000160AD2 /* LoginView.swift in Sources */,
 				046209462B262671004DF7ED /* FavoriteSongsAnalysisView.swift in Sources */,

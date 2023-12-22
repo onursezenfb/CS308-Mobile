@@ -31,6 +31,7 @@ struct SongRating: Identifiable, Codable {
 }
 
 struct FavoriteSongsAnalysisView: View {
+    @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject var userSession: UserSession
     @State private var selectedMonths: String = "1" // Default to 1 month
     @State private var favoriteSongs: [SongRating] = []
@@ -52,12 +53,12 @@ struct FavoriteSongsAnalysisView: View {
                 Text("in Last Months")
                     .font(Font.system(size: 36, design: .rounded))
                     .bold()
-                    .foregroundColor(.pink)
+                    .foregroundColor(themeManager.themeColor)
             }
             VStack(alignment: .leading) {
                 Text("Select Months")
                     .font(.headline)
-                    .foregroundColor(.pink)
+                    .foregroundColor(themeManager.themeColor)
                     .padding([.top, .leading]) // Add padding to top and leading edges
                 
                 // Picker to select the months

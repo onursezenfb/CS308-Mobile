@@ -3,6 +3,7 @@ import SwiftUI
 struct PremiumView: View {
     var username: String
     @EnvironmentObject var userSession: UserSession
+    @EnvironmentObject var themeManager: ThemeManager
     
     var body: some View {
         VStack {

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SignUpView: View {
+    @EnvironmentObject var themeManager: ThemeManager
     @State var email: String
     @State private var username = ""
     @State private var password = ""
@@ -14,7 +15,7 @@ struct SignUpView: View {
     var body: some View {
         NavigationView{
             ZStack{
-                Color.pink
+                themeManager.themeColor
                     .ignoresSafeArea()
                 Circle()
                     .scale(1.7)
@@ -31,7 +32,7 @@ struct SignUpView: View {
                         Text("Music Tailor")
                             .font(Font.system(size: 36, design: .rounded))
                             .bold()
-                            .foregroundColor(.pink)
+                            .foregroundColor(themeManager.themeColor)
                             .frame(width: 302, height: 50, alignment: .leading)
                         
                     
@@ -59,7 +60,7 @@ struct SignUpView: View {
                         
                     if let error = emailError {
                                     Text(error)
-                                        .foregroundColor(.pink)
+                                        .foregroundColor(themeManager.themeColor)
                                         .frame(width: 300, height: 23, alignment: .topLeading)
                                         .font(Font.system(size: 15.5, design: .default))
                                 }
@@ -79,7 +80,7 @@ struct SignUpView: View {
                         Text("Next")
                             .foregroundColor(.white)
                             .frame(width: 300, height: 50)
-                            .background(Color.pink)
+                            .background(themeManager.themeColor)
                             .cornerRadius(10)
                     }
                     
@@ -88,7 +89,7 @@ struct SignUpView: View {
                             .foregroundColor(.black)
                         NavigationLink(destination: LoginView().navigationBarBackButtonHidden(true)) {
                             Text("log in")
-                                .foregroundColor(.pink)
+                                .foregroundColor(themeManager.themeColor)
                                 .bold()
                         }
                         .navigationBarBackButtonHidden(true) // Hide the back button
@@ -126,6 +127,7 @@ struct SignUpView: View {
 
 
 struct PasswordView: View {
+    @EnvironmentObject var themeManager: ThemeManager
     @Binding var email: String
     @State private var username = ""
     @State private var password = ""
@@ -141,7 +143,7 @@ struct PasswordView: View {
     var body: some View {
         NavigationView{
             ZStack{
-                Color.pink
+                themeManager.themeColor
                     .ignoresSafeArea()
                 Circle()
                     .scale(1.7)
@@ -160,7 +162,7 @@ struct PasswordView: View {
                         Text("Tailor")
                             .font(Font.system(size: 36, design: .rounded))
                             .bold()
-                            .foregroundColor(.pink)
+                            .foregroundColor(themeManager.themeColor)
                         VStack{
                             Text("Your Password")
                                 .font(.custom("Arial", size: 30))
@@ -303,7 +305,7 @@ struct PasswordView: View {
                             Text("Back")
                                 .foregroundColor(.white)
                                 .frame(width: 75, height: 50)
-                                .background(Color.pink)
+                                .background(themeManager.themeColor)
                                 .cornerRadius(10)
                         }
                         Button(action: {
@@ -313,7 +315,7 @@ struct PasswordView: View {
                             Text("Next")
                                 .foregroundColor(.white)
                                 .frame(width: 217, height: 50)
-                                .background(Color.pink)
+                                .background(themeManager.themeColor)
                                 .cornerRadius(10)
                         }
                     }
@@ -393,6 +395,7 @@ struct PasswordView: View {
 
 
 struct UsernameView: View {
+    @EnvironmentObject var themeManager: ThemeManager
     @Binding var email: String
     let password: String
     @State private var username = ""
@@ -407,7 +410,7 @@ struct UsernameView: View {
     var body: some View {
         NavigationView{
             ZStack{
-                Color.pink
+                themeManager.themeColor
                     .ignoresSafeArea()
                 Circle()
                     .scale(1.7)
@@ -441,7 +444,7 @@ struct UsernameView: View {
                         Text("Music Tailor")
                             .font(Font.system(size: 36, design: .rounded))
                             .bold()
-                            .foregroundColor(.pink)
+                            .foregroundColor(themeManager.themeColor)
                         
                         
                         
@@ -547,7 +550,7 @@ struct UsernameView: View {
                             Text("Back")
                                 .foregroundColor(.white)
                                 .frame(width: 75, height: 50)
-                                .background(Color.pink)
+                                .background(themeManager.themeColor)
                                 .cornerRadius(10)
                         }
                         Button(action: {
@@ -556,7 +559,7 @@ struct UsernameView: View {
                             Text("Create Account")
                                 .foregroundColor(.white)
                                 .frame(width: 217, height: 50)
-                                .background(Color.pink)
+                                .background(themeManager.themeColor)
                                 .cornerRadius(10)
                         }
                     }
