@@ -3,6 +3,16 @@ import SwiftUI
 enum ItemType {
     case song, album, performer
 }
+
+// Helper extension to append strings to Data
+extension Data {
+    mutating func append(_ string: String, using encoding: String.Encoding = .utf8) {
+        if let data = string.data(using: encoding) {
+            append(data)
+        }
+    }
+}
+
 struct ContentView: View {
     @EnvironmentObject var userSession: UserSession
     @State private var selectedTab: Int = 0
@@ -10,48 +20,48 @@ struct ContentView: View {
     
     var body: some View {
         NavigationView {
-              VStack {
+            VStack {
+                
+                TabView(selection: $selectedTab) {
+                    HomeView()
+                        .environmentObject(userSession)
+                        .tabItem {
+                            Image(systemName: "house")
+                            Text("Home")
+                        }
+                        .tag(0)
                     
-                    TabView(selection: $selectedTab) {
-                        HomeView()
-                            .environmentObject(userSession)
-                            .tabItem {
-                                Image(systemName: "house")
-                                Text("Home")
-                            }
-                            .tag(0)
-                        
-                        UploadMusicFormView()
-                            .tabItem {
-                                Image(systemName: "square.and.arrow.up")
-                                Text("Upload Music")
-                            }
-                            .tag(1)
-                        
-                        PlaylistsView()
-                            .tabItem {
-                                Image(systemName: "music.note.list")
-                                Text("Your Music")
-                            }
-                            .tag(2)
-                        
-                        FriendsView()
-                            .tabItem {
-                                Image(systemName: "person.2")
-                                Text("Friends")
-                            }
-                            .tag(3)
-                        
-                        ProfileView()
-                            .tabItem {
-                                Image(systemName: "person.circle")
-                                Text("Profile")
-                            }
-                            .tag(4)
-                    }
-                    .accentColor(themeManager.themeColor)
+                    UploadMusicFormView()
+                        .tabItem {
+                            Image(systemName: "square.and.arrow.up")
+                            Text("Upload Music")
+                        }
+                        .tag(1)
+                    
+                    PlaylistsView()
+                        .tabItem {
+                            Image(systemName: "music.note.list")
+                            Text("Your Music")
+                        }
+                        .tag(2)
+                    
+                    FriendsView()
+                        .tabItem {
+                            Image(systemName: "person.2")
+                            Text("Friends")
+                        }
+                        .tag(3)
+                    
+                    ProfileView()
+                        .tabItem {
+                            Image(systemName: "person.circle")
+                            Text("Profile")
+                        }
+                        .tag(4)
                 }
+                .accentColor(themeManager.themeColor)
             }
+        }
     }
     
     
@@ -64,16 +74,16 @@ struct ContentView: View {
     struct SongRating: Decodable {
         var song_ratings_avg_rating: String // Assuming JSON structure is similar
     }
-
+    
     struct SongRatingResponse: Decodable {
         var data: [Rating] // Assuming similar structure as AlbumRatingResponse
     }
-
+    
     struct SimpleAlbum: Decodable {
         var album_id: String
         var name: String
     }
-
+    
     struct SongView: View {
         var userId: String
         var songId: String
@@ -89,7 +99,7 @@ struct ContentView: View {
         @State private var alertMessage = ""
         @State private var userLastRating: Double? = nil
         @GestureState private var dragOffset: CGFloat = 0
-
+        
         var body: some View {
             ZStack {
                 // Background image
@@ -131,9 +141,9 @@ struct ContentView: View {
                                     .background(LinearGradient(gradient: Gradient(colors: [Color.black.opacity(0.7), Color.clear]), startPoint: .bottom, endPoint: .top))
                                 
                                 Spacer()
-                        }
-                        // album's name
-                        
+                            }
+                            // album's name
+                            
                             
                         }
                         
@@ -155,7 +165,7 @@ struct ContentView: View {
                             VStack (spacing: 40){
                                 HStack(spacing: 10){
                                     
-                                   
+                                    
                                     Text("Artist: \(artistName)")
                                         .multilineTextAlignment(.leading)
                                         .lineLimit(nil) // Allows unlimited lines
@@ -166,14 +176,14 @@ struct ContentView: View {
                                         .italic()
                                         .padding(.leading, 15)
                                         .padding(.top, -120)
-                                
-                                   
+                                    
+                                    
                                     Spacer()
                                 }
                                 
                                 HStack(spacing: 10){
                                     
-                                   
+                                    
                                     Text("Album: \(album?.name ?? "Unknown")")
                                         .multilineTextAlignment(.leading)
                                         .lineLimit(nil) // Allows unlimited lines
@@ -184,14 +194,14 @@ struct ContentView: View {
                                         .italic()
                                         .padding(.leading, 15)
                                         .padding(.top, -120)
-                                
-                                   
+                                    
+                                    
                                     Spacer()
                                 }
                             }
                             
                             
-
+                            
                             ZStack {
                                 Rectangle()
                                     .foregroundColor(Color.black.opacity(0.4)) // Adjust the color and opacity as needed
@@ -205,7 +215,7 @@ struct ContentView: View {
                                             .padding(.leading, 15)
                                         
                                         Spacer()
-
+                                        
                                         ForEach(1...5, id: \.self) { index in
                                             Button(action: {
                                                 selectedRating = index
@@ -219,7 +229,7 @@ struct ContentView: View {
                                         Spacer()
                                         Spacer()
                                         Spacer()
-
+                                        
                                     }
                                     .padding(.leading, 10)
                                     .padding(.vertical, 20)
@@ -235,7 +245,7 @@ struct ContentView: View {
                                         Spacer()
                                     }
                                     .padding(.leading, 15)
-
+                                    
                                     HStack(spacing: 5) {
                                         if let userRating = userLastRating {
                                             let intValue = Int(userRating)
@@ -248,7 +258,7 @@ struct ContentView: View {
                                         Spacer()
                                     }
                                     .padding(.leading, 15)
-
+                                    
                                     
                                 }
                                 
@@ -290,13 +300,13 @@ struct ContentView: View {
                 fetchSongDetails()
             }
         }
-
+        
         private func fetchAlbumDetails() {
             guard let albumId = song?.album_id else {
                 self.errorMessage = "Album ID not found"
                 return
             }
-
+            
             guard let url = URL(string: "http://127.0.0.1:8000/api/albums/\(albumId)") else {
                 self.errorMessage = "Invalid URL for album details"
                 return
@@ -312,7 +322,7 @@ struct ContentView: View {
                     }
                     return
                 }
-
+                
                 guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
                     DispatchQueue.main.async {
                         self.errorMessage = "Server error"
@@ -322,7 +332,7 @@ struct ContentView: View {
                     }
                     return
                 }
-
+                
                 guard let data = data else {
                     DispatchQueue.main.async {
                         self.errorMessage = "Data error"
@@ -332,7 +342,7 @@ struct ContentView: View {
                     }
                     return
                 }
-
+                
                 do {
                     let decodedResponse = try JSONDecoder().decode(SimpleAlbum.self, from: data)
                     DispatchQueue.main.async {
@@ -348,8 +358,8 @@ struct ContentView: View {
                 }
             }.resume()
         }
-
-            
+        
+        
         private func fetchSongDetails() {
             fetchSong()
             fetchUserLastRating(songId: songId, username: userId)
@@ -361,7 +371,7 @@ struct ContentView: View {
                 return
             }
             print(url)
-
+            
             URLSession.shared.dataTask(with: url) { data, response, error in
                 if let error = error {
                     DispatchQueue.main.async {
@@ -420,7 +430,7 @@ struct ContentView: View {
                 return
             }
             print(url)
-
+            
             URLSession.shared.dataTask(with: url) { data, response, error in
                 if let error = error {
                     print("Network error: \(error.localizedDescription)")
@@ -457,7 +467,7 @@ struct ContentView: View {
                 return
             }
             print(url)
-
+            
             URLSession.shared.dataTask(with: url) { data, response, error in
                 if let error = error {
                     print("Network error: \(error.localizedDescription)")
@@ -502,7 +512,7 @@ struct ContentView: View {
             }
             
             print(url)
-
+            
             
             let currentDate = getCurrentFormattedDate()
             
@@ -563,15 +573,15 @@ struct ContentView: View {
             return dateFormatter.string(from: Date())
         }
     }
-
-
     
-//    struct SongView_Previews: PreviewProvider {
-//        static var previews: some View {
-//            SongView(userId: "ozaancelebi2", songId: "0VjIjW4GlUZAMYd2vXMi3b", artistName: "The Weeknd", imageUrl: "https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36" )
-//        }
-//
-//    }
+    
+    
+    //    struct SongView_Previews: PreviewProvider {
+    //        static var previews: some View {
+    //            SongView(userId: "ozaancelebi2", songId: "0VjIjW4GlUZAMYd2vXMi3b", artistName: "The Weeknd", imageUrl: "https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36" )
+    //        }
+    //
+    //    }
     
     struct DetailedAlbum: Decodable {
         var album_id: String
@@ -582,11 +592,11 @@ struct ContentView: View {
         var image_url: String
         var artist_id: String
     }
-
+    
     struct AlbumRating: Decodable {
         var album_ratings_avg_rating: String // Since the JSON has this as a String
     }
-
+    
     struct AlbumRatingResponse: Decodable {
         var data: [Rating] // Assuming similar structure as PerformerRatingResponse
     }
@@ -607,7 +617,7 @@ struct ContentView: View {
         @State private var alertMessage = ""
         @State private var userLastRating: Double? = nil
         @GestureState private var dragOffset: CGFloat = 0
-
+        
         var body: some View {
             ZStack {
                 // Background image
@@ -636,7 +646,7 @@ struct ContentView: View {
                         // album's name
                         if let name = album?.name {
                             
-                                        
+                            
                             
                             Text(name)
                                 .multilineTextAlignment(.leading)
@@ -694,7 +704,7 @@ struct ContentView: View {
                             
                             HStack(spacing: 10){
                                 
-                               
+                                
                                 if let release = album?.release_date {
                                     Text("Release date: \(release)")
                                         .foregroundColor(.white.opacity(0.85)) // Set text color to white
@@ -703,14 +713,14 @@ struct ContentView: View {
                                         .italic()
                                         .padding(.leading, 15)
                                 }
-                               
+                                
                                 Spacer()
                             }
                             .padding(.top, -92)
                             
                             HStack(spacing: 10){
                                 
-                               
+                                
                                 Text("Artist: \(performerName)")
                                     .multilineTextAlignment(.leading)
                                     .lineLimit(nil) // Allows unlimited lines
@@ -721,11 +731,11 @@ struct ContentView: View {
                                     .italic()
                                     .padding(.leading, 15)
                                     .padding(.top, -120)
-                            
-                               
+                                
+                                
                                 Spacer()
                             }
-
+                            
                             ZStack {
                                 Rectangle()
                                     .foregroundColor(Color.black.opacity(0.4)) // Adjust the color and opacity as needed
@@ -738,7 +748,7 @@ struct ContentView: View {
                                             .fontWeight(.bold)
                                         
                                         Spacer()
-
+                                        
                                         ForEach(1...5, id: \.self) { index in
                                             Button(action: {
                                                 selectedRating = index
@@ -752,7 +762,7 @@ struct ContentView: View {
                                         Spacer()
                                         Spacer()
                                         Spacer()
-
+                                        
                                     }
                                     .padding(.leading, 10)
                                     .padding(.vertical, 20)
@@ -781,7 +791,7 @@ struct ContentView: View {
                                         Spacer()
                                     }
                                     .padding(.leading, 10)
-
+                                    
                                     
                                 }
                                 
@@ -828,13 +838,13 @@ struct ContentView: View {
             fetchAlbum()
             fetchUserLastRating(albumId: albumId, username: userId)
         }
-
+        
         private func fetchAlbum() {
             guard let url = URL(string: "http://127.0.0.1:8000/api/albums/\(albumId)") else {
                 self.errorMessage = "Invalid URL for album details"
                 return
             }
-
+            
             URLSession.shared.dataTask(with: url) { data, response, error in
                 if let error = error {
                     DispatchQueue.main.async {
@@ -845,7 +855,7 @@ struct ContentView: View {
                     }
                     return
                 }
-
+                
                 guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
                     DispatchQueue.main.async {
                         self.errorMessage = "Server error"
@@ -855,7 +865,7 @@ struct ContentView: View {
                     }
                     return
                 }
-
+                
                 guard let data = data else {
                     DispatchQueue.main.async {
                         self.errorMessage = "Data error"
@@ -865,7 +875,7 @@ struct ContentView: View {
                     }
                     return
                 }
-
+                
                 do {
                     let decodedResponse = try JSONDecoder().decode(DetailedAlbum.self, from: data)
                     DispatchQueue.main.async {
@@ -884,43 +894,43 @@ struct ContentView: View {
                 }
             }.resume()
         }
-
+        
         private func fetchUserLastRating(albumId: String, username: String) {
-                    guard let url = URL(string: "http://127.0.0.1:8000/api/albumrating/album/\(albumId)") else {
-                        print("Invalid URL for album rating")
-                        return
-                    }
-                    
-                    URLSession.shared.dataTask(with: url) { data, response, error in
-                        if let error = error {
-                            print("Network error: \(error.localizedDescription)")
-                            return
-                        }
-                        
-                        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                            print("Server error or invalid response for album rating")
-                            return
-                        }
-                        
-                        guard let data = data else {
-                            print("No data received for album rating")
-                            return
-                        }
-                        
-                        do {
-                            let decodedResponse = try JSONDecoder().decode(RatingResponse.self, from: data)
-                            if let lastRating = decodedResponse.data.filter({ $0.username == username }).last {
-                                DispatchQueue.main.async {
-                                    // Here we parse the string to a Double
-                                    self.userLastRating = Double(lastRating.rating)
-                                }
-                            }
-                        } catch {
-                            print("Decoding error for album rating: \(error)")
-                        }
-                    }.resume()
+            guard let url = URL(string: "http://127.0.0.1:8000/api/albumrating/album/\(albumId)") else {
+                print("Invalid URL for album rating")
+                return
+            }
+            
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    print("Network error: \(error.localizedDescription)")
+                    return
                 }
-
+                
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    print("Server error or invalid response for album rating")
+                    return
+                }
+                
+                guard let data = data else {
+                    print("No data received for album rating")
+                    return
+                }
+                
+                do {
+                    let decodedResponse = try JSONDecoder().decode(RatingResponse.self, from: data)
+                    if let lastRating = decodedResponse.data.filter({ $0.username == username }).last {
+                        DispatchQueue.main.async {
+                            // Here we parse the string to a Double
+                            self.userLastRating = Double(lastRating.rating)
+                        }
+                    }
+                } catch {
+                    print("Decoding error for album rating: \(error)")
+                }
+            }.resume()
+        }
+        
         private func fetchAverageRating(albumName: String) {
             guard let url = URL(string: "http://127.0.0.1:8000/api/search/album/\(albumName)") else {
                 print("Invalid URL for average rating")
@@ -962,29 +972,29 @@ struct ContentView: View {
                 }
             }.resume()
         }
-
+        
         func fetchPerformerDetails(artistId: String) {
             guard let url = URL(string: "http://127.0.0.1:8000/api/performers/\(artistId)") else {
                 print("Invalid URL")
                 return
             }
-
+            
             URLSession.shared.dataTask(with: url) { data, response, error in
                 if let error = error {
                     print("Network error: \(error.localizedDescription)")
                     return
                 }
-
+                
                 guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
                     print("Server error or invalid response")
                     return
                 }
-
+                
                 guard let data = data else {
                     print("No data received")
                     return
                 }
-
+                
                 do {
                     let decodedResponse = try JSONDecoder().decode(Performer.self, from: data)
                     DispatchQueue.main.async {
@@ -996,7 +1006,7 @@ struct ContentView: View {
                 }
             }.resume()
         }
-
+        
         
         
         private func submitRating(for albumID: String, with rating: Int, username: String) {
@@ -1057,23 +1067,23 @@ struct ContentView: View {
                 }
             }.resume()
         }
-
+        
         private func getCurrentFormattedDate() -> String {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss" // Adjust the format to match your backend expectation
             return dateFormatter.string(from: Date())
         }
     }
-
-//    struct AlbumView_Previews: PreviewProvider {
-//            static var previews: some View {
-//                AlbumView(userId: "ozaancelebi2", albumId: "03Mx6yaV7k4bsEmcTH8J49", performerName: "Ismim Var Bro" )
-//            }
-//            
-//        }
+    
+    //    struct AlbumView_Previews: PreviewProvider {
+    //            static var previews: some View {
+    //                AlbumView(userId: "ozaancelebi2", albumId: "03Mx6yaV7k4bsEmcTH8J49", performerName: "Ismim Var Bro" )
+    //            }
+    //
+    //        }
     
     
-        
+    
     
     struct DetailedPerformer: Decodable {
         var artist_id: String
@@ -1082,7 +1092,7 @@ struct ContentView: View {
         var popularity: Int?
         var image_url: String
     }
-
+    
     struct PerformerRating: Decodable {
         var performer_ratings_avg_rating: String // Since the JSON has this as a String
     }
@@ -1090,7 +1100,7 @@ struct ContentView: View {
     struct RatingResponse: Decodable {
         var data: [Rating]
     }
-
+    
     struct Rating: Decodable {
         var id: Int
         var rating: String
@@ -1098,7 +1108,7 @@ struct ContentView: View {
         var artist_id: String?
         var date_rated: String
     }
-
+    
     struct PerformerView: View {
         var userId: String
         var artistId: String
@@ -1205,7 +1215,7 @@ struct ContentView: View {
                                             .fontWeight(.bold)
                                         
                                         Spacer()
-
+                                        
                                         ForEach(1...5, id: \.self) { index in
                                             Button(action: {
                                                 selectedRating = index
@@ -1219,7 +1229,7 @@ struct ContentView: View {
                                         Spacer()
                                         Spacer()
                                         Spacer()
-
+                                        
                                     }
                                     .padding(.leading, 10)
                                     .padding(.vertical, 20)
@@ -1248,7 +1258,7 @@ struct ContentView: View {
                                         Spacer()
                                     }
                                     .padding(.leading, 10)
-
+                                    
                                     
                                 }
                                 
@@ -1498,12 +1508,12 @@ struct ContentView: View {
     }
     
     
-
-
     
-
-
-
+    
+    
+    
+    
+    
     
     
     struct HomeView: View {
@@ -1524,9 +1534,9 @@ struct ContentView: View {
         @State private var tempalbums: [Album] = []
         @State private var tempsongs: [Song] = []
         @State private var tempperformers: [Performer] = []
-
+        
         enum Filter: String, CaseIterable {
-
+            
             case songs = "Songs"
             case albums = "Albums"
             case performers = "Performers"
@@ -1600,7 +1610,7 @@ struct ContentView: View {
                                     currentItemType = item.itemType  // Set the item type
                                     currentItemIdentifier = item.identifier
                                     currentItemImageUrl = item.imageUrl
-
+                                    
                                     switch currentItemType {
                                     case .performer:
                                         showingPerformerSheet = true
@@ -1637,7 +1647,7 @@ struct ContentView: View {
                         if let itemID = currentItemID, currentItemType == .album {
                             let userID = userSession.username
                             let artistName = String(currentItemIdentifier?.dropFirst(6) ?? "no name")
-
+                            
                             AlbumView(userId: userID!, albumId: itemID, performerName: artistName)
                         }
                     }
@@ -1709,9 +1719,9 @@ struct ContentView: View {
             
             let task = URLSession.shared.dataTask(with: endpointURL) { data, response, error in
                 if let error = error {
-                   print("Error fetching data: \(error)")
-                   return
-               }
+                    print("Error fetching data: \(error)")
+                    return
+                }
                 if let data = data {
                     DispatchQueue.main.async {
                         switch currentFilter {
@@ -1750,38 +1760,38 @@ struct ContentView: View {
             var items: [FilterItem] = []
             print("Number of performers: \(performers.count)")
             switch currentFilter {
-                case .songs:
-                    items = songs.map { song in
-                        let album = albums.first(where: { $0.album_id == song.album_id })
-                        let performer = album.flatMap { alb in
-                            performers.first(where: { $0.artist_id == alb.artist_id })
-                        }
-                        
-                        return FilterItem(
-                            id: song.song_id,
-                            name: song.name,
-                            identifier: "Song - \(performer?.name ?? "Unknown Performer")",
-                            imageUrl: album?.image_url ?? "default_image_url",
-                            itemType: .song
-                        )
+            case .songs:
+                items = songs.map { song in
+                    let album = albums.first(where: { $0.album_id == song.album_id })
+                    let performer = album.flatMap { alb in
+                        performers.first(where: { $0.artist_id == alb.artist_id })
                     }
                     
-                case .albums:
-                    items = tempalbums.map { album in
-                        let performer = performers.first(where: { $0.artist_id == album.artist_id })
-                        
-                        return FilterItem(
-                            id: album.album_id,
-                            name: album.name,
-                            identifier: "Album - \(performer?.name ?? "Unknown Performer")",
-                            imageUrl: album.image_url,
-                            itemType: .album
-                        )
-                    }
-                case .performers:
-                    items = tempperformers.map { performer in
-                        FilterItem(id: performer.artist_id, name: performer.name, identifier: "Performer", imageUrl: performer.image_url,itemType: .performer)
-                    }
+                    return FilterItem(
+                        id: song.song_id,
+                        name: song.name,
+                        identifier: "Song - \(performer?.name ?? "Unknown Performer")",
+                        imageUrl: album?.image_url ?? "default_image_url",
+                        itemType: .song
+                    )
+                }
+                
+            case .albums:
+                items = tempalbums.map { album in
+                    let performer = performers.first(where: { $0.artist_id == album.artist_id })
+                    
+                    return FilterItem(
+                        id: album.album_id,
+                        name: album.name,
+                        identifier: "Album - \(performer?.name ?? "Unknown Performer")",
+                        imageUrl: album.image_url,
+                        itemType: .album
+                    )
+                }
+            case .performers:
+                items = tempperformers.map { performer in
+                    FilterItem(id: performer.artist_id, name: performer.name, identifier: "Performer", imageUrl: performer.image_url,itemType: .performer)
+                }
             default:
                 break
             }
@@ -1816,45 +1826,45 @@ struct ContentView: View {
         var artist_id: String
         // Add other album-specific fields...
     }
-
+    
     struct SongSearchResult: Decodable {
         var song_id: String
         var name: String
         var album_id: String
         var firstPerformerId: String?
-
+        
         private enum CodingKeys: String, CodingKey {
             case song_id, name, album_id, performers
         }
-
+        
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             song_id = try container.decode(String.self, forKey: .song_id)
             name = try container.decode(String.self, forKey: .name)
             album_id = try container.decode(String.self, forKey: .album_id)
-
+            
             // Decode the performers array and extract the first element
             let performerIds = try container.decode([String].self, forKey: .performers)
             firstPerformerId = performerIds.first
         }
     }
-
-
+    
+    
     struct PerformerSearchResult: Decodable {
         var artist_id: String
         var name: String
         var image_url: String
         // Add other performer-specific fields...
     }
-
-
+    
+    
     
     struct SearchResult: Decodable {
         var search_type: String
         var album: AlbumSearchResult?
         var song: SongSearchResult?
         var performer: PerformerSearchResult?
-
+        
         enum CodingKeys: String, CodingKey {
             case search_type
             case album = "album_id"
@@ -1862,19 +1872,19 @@ struct ContentView: View {
             case performer = "artist_id"
         }
     }
-
-
+    
+    
     
     
     struct Song: Identifiable, Decodable {
         var song_id: String
         var name: String
         var album_id: String
-//        var image_url: String
+        //        var image_url: String
         // Add other properties as needed
         var id: String { song_id }
     }
-
+    
     struct Album: Identifiable, Decodable {
         var album_id: String
         var name: String
@@ -1883,7 +1893,7 @@ struct ContentView: View {
         // Add other properties as needed
         var id: String { album_id }
     }
-
+    
     struct Performer: Identifiable, Decodable {
         var artist_id: String
         var name: String
@@ -1891,8 +1901,8 @@ struct ContentView: View {
         // Add other properties as needed
         var id: String { artist_id }
     }
-
-
+    
+    
     
     
     struct UploadMusicFormView: View {
@@ -1901,7 +1911,7 @@ struct ContentView: View {
         @State private var spotifyLink: String = ""
         @State private var showAlert = false
         @State private var alertMessage = ""
-
+        
         var body: some View {
             NavigationView {
                 ZStack {
@@ -1982,7 +1992,7 @@ struct ContentView: View {
             }
             request.httpBody = jsonData
             print("Uploading Spotify Link: \(spotifyLink)")
-
+            
             URLSession.shared.dataTask(with: request) { data, response, error in
                 DispatchQueue.main.async {
                     if let error = error {
@@ -1996,14 +2006,14 @@ struct ContentView: View {
                         showAlert = true
                         return
                     }
-
+                    
                     if let responseDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: String],
                        let message = responseDict["message"] {
                         alertMessage = message
                     } else {
                         alertMessage = "Invalid response format"
                     }
-
+                    
                     if httpResponse.statusCode == 200 {
                         // Handle successful upload
                         alertMessage = "Successfully uploaded!"
@@ -2017,21 +2027,21 @@ struct ContentView: View {
                         // Handle other errors
                         alertMessage = "An error occurred."
                     }
-
+                    
                     showAlert = true
                 }
             }.resume()
         }
     }
-
-
     
-
+    
+    
+    
     struct PlaylistsView: View {
         @EnvironmentObject var themeManager: ThemeManager
         // Define a two-column grid layout
         private var gridItems = [GridItem(.flexible()), GridItem(.flexible())]
-
+        
         var body: some View {
             NavigationView {
                 ScrollView {
@@ -2062,7 +2072,7 @@ struct ContentView: View {
                                         .font(.custom("Arial-BoldMT", size: 25))
                                         .bold()
                                 )
-
+                            
                             Text("Analysis")
                                 .font(.custom("Arial-BoldMT", size: 25))
                                 .bold()
@@ -2140,8 +2150,8 @@ struct ContentView: View {
                 .shadow(radius: 5) // Add a shadow for a 3D effect
         }
     }
-
-
+    
+    
     
     
     struct FriendsView: View {
@@ -2177,7 +2187,7 @@ struct ContentView: View {
                                 .cornerRadius(10)
                         }
                         .padding(.bottom, 10)
-                                        
+                        
                         Button(action: {
                             // Action for "Manage Your Friends" button
                         }) {
@@ -2201,9 +2211,9 @@ struct ContentView: View {
         var themeGradient: LinearGradient {
             LinearGradient(gradient: Gradient(colors: [themeManager.themeColor, themeManager.themeColor.opacity(0.7)]), startPoint: .topLeading, endPoint: .bottomTrailing)
         }
-
+        
     }
-
+    
     
     
     
@@ -2259,7 +2269,7 @@ struct ContentView: View {
                             }
                         }
                         
-                  
+                        
                         HStack {
                             Text("Music Tailor")
                                 .font(Font.system(size: 32, design: .rounded))
@@ -2278,7 +2288,7 @@ struct ContentView: View {
                     .padding(.bottom, 10)
                     .background(themeManager.themeColor.opacity(0.15))
                     
-                     if let image = selectedImage ?? profileImage {
+                    if let image = selectedImage ?? profileImage {
                         Image(uiImage: image)
                             .resizable()
                             .frame(width: 120, height: 120)
@@ -2310,13 +2320,13 @@ struct ContentView: View {
                     
                     
                     // Description text
-//                    Text("This is a brief description about yourself. You can customize it based on your preferences.")
-//                        .font(.custom("Avenir Next", size: 18))
-//                        .italic()
-//                        .padding(.horizontal, 20)
-//                        .multilineTextAlignment(.center)
-//
-
+                    //                    Text("This is a brief description about yourself. You can customize it based on your preferences.")
+                    //                        .font(.custom("Avenir Next", size: 18))
+                    //                        .italic()
+                    //                        .padding(.horizontal, 20)
+                    //                        .multilineTextAlignment(.center)
+                    //
+                    
                     ScrollView {
                         // Editable user information fields
                         Group {
@@ -2393,23 +2403,23 @@ struct ContentView: View {
                 print("Invalid URL")
                 return
             }
-
+            
             let task = URLSession.shared.dataTask(with: url) { data, response, error in
                 if let error = error {
                     print("Error fetching user data: \(error)")
                     return
                 }
-
+                
                 guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
                     print("Error: Invalid response from server")
                     return
                 }
-
+                
                 guard let data = data else {
                     print("Error: No data received")
                     return
                 }
-
+                
                 do {
                     if let fetchedData = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                         DispatchQueue.main.async {
@@ -2419,11 +2429,45 @@ struct ContentView: View {
                 } catch {
                     print("Error: Could not decode JSON")
                 }
+                
+                do {
+                    let fetchedUser = try JSONDecoder().decode(User.self, from: data)
+                    DispatchQueue.main.async {
+                        self.updateUserImage(with: fetchedUser)
+                    }
+                } catch {
+                    print("Error: Could not decode user data")
+                }
             }
-
+            
             task.resume()
         }
-
+        
+        private func loadProfileImage(from urlString: String?) {
+            guard let urlString = urlString, let url = URL(string: urlString) else { return }
+            
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    print("Error fetching image: \(error)")
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    print("Loading profile image: Error: Invalid response from server")
+                    return
+                }
+                
+                guard let data = data, let image = UIImage(data: data) else {
+                    print("Error: No data or invalid data received")
+                    return
+                }
+                
+                DispatchQueue.main.async {
+                    self.profileImage = image
+                }
+            }.resume()
+        }
+        
         private func updateUserData(with data: [String: Any]) {
             DispatchQueue.main.async {
                 self.email = data["email"] as? String ?? ""
@@ -2431,20 +2475,31 @@ struct ContentView: View {
                 self.subscription = data["subscription"] as? String ?? ""
                 self.rateLimit = data["rate_limit"] as? String ?? ""
                 self.theme = data["theme"] as? String ?? ""
-
+                
                 if let dobString = data["date_of_birth"] as? String, let dob = self.dateFormatter.date(from: dobString) {
                     self.dateOfBirth = dob
                 }
+                
+                if let imageURL = data["image"] as? String {
+                    self.loadProfileImage(from: imageURL)
+                }
             }
         }
-
+        
+        private func updateUserImage(with user: User) {
+            DispatchQueue.main.async {
+                if let image = user.image {
+                    self.loadProfileImage(from: image)
+                }
+            }
+        }
         
         private func updateUserInformation() {
             guard let url = URL(string: "http://127.0.0.1:8000/api/users/\(userSession.username ?? "")") else {
                 print("Invalid URL")
                 return
             }
-
+            
             var request = URLRequest(url: url)
             request.httpMethod = "PUT"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -2495,8 +2550,8 @@ struct ContentView: View {
                 print("Error encoding user data")
             }
         }
-
-
+        
+        
     }
     
     // User struct for encoding
@@ -2512,8 +2567,9 @@ struct ContentView: View {
         var subscription: String
         var rate_limit: String
         var theme: String?
+        var image: String?
     }
-        
+    
     
     
     
@@ -2525,7 +2581,7 @@ struct ContentView: View {
         @Binding var profileImage: UIImage?
         @State private var navigateToPremium = false
         @State private var showingChangeThemeView = false
-
+        
         
         var body: some View {
             NavigationView {
@@ -2586,7 +2642,7 @@ struct ContentView: View {
                         ) {
                             EmptyView()
                         }
-
+                        
                         // Button that sets navigateToPremium to true
                         Button(action: {
                             navigateToPremium = true
@@ -2598,7 +2654,7 @@ struct ContentView: View {
                                 .cornerRadius(10)
                         }
                         .padding(.top, 20)
-                
+                        
                         Button(action: {
                             // Show the image picker when the button is pressed
                             showingImagePicker.toggle()
@@ -2611,12 +2667,11 @@ struct ContentView: View {
                         }
                         .padding(.top, 20)
                         .sheet(isPresented: $showingImagePicker) {
-                            ImagePicker(image: $profileImage) // Change this line
+                            ImagePicker(image: $profileImage, parentView: self)
                         }
                         
-                        
                         Button("Change Theme") {
-                           showingChangeThemeView = true
+                            showingChangeThemeView = true
                         }
                         .buttonStyle(SettingsButtonStyle())
                         .sheet(isPresented: $showingChangeThemeView) {
@@ -2665,6 +2720,51 @@ struct ContentView: View {
                 LinearGradient(gradient: Gradient(colors: [themeManager.themeColor, themeManager.themeColor.opacity(0)]), startPoint: .topLeading, endPoint: .bottomTrailing)
             }
         }
+        
+        
+        func uploadImageURL(_ imageURL: URL, completion: @escaping (Bool) -> Void) {
+            guard let uploadUrl = URL(string: "http://127.0.0.1:8000/api/users/\(userSession.username ?? "")") else {
+                print("Invalid upload URL")
+                completion(false)
+                return
+            }
+            
+            var request = URLRequest(url: uploadUrl)
+            request.httpMethod = "PUT"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            let jsonBody: [String: String] = ["image": imageURL.absoluteString]
+            
+            do {
+                let jsonData = try JSONSerialization.data(withJSONObject: jsonBody, options: [])
+                request.httpBody = jsonData
+                
+                
+                let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                    if let error = error {
+                        print("Error uploading image URL: \(error)")
+                        completion(false)
+                        return
+                    }
+                    
+                    guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                        print("Error: Invalid response from server")
+                        completion(false)
+                        return
+                    }
+                    
+                    completion(true)
+                }
+                
+                task.resume()
+            } catch {
+                print("Error: Could not create JSON data")
+                completion(false)
+            }
+        }
+        
+        
+        
     }
     
     struct SettingsButtonStyle: ButtonStyle {
@@ -2688,9 +2788,10 @@ struct ContentView: View {
         }
         
     }
+    
     struct ImagePicker: UIViewControllerRepresentable {
-        
         @Binding var image: UIImage?
+        var parentView: SettingsView  // Add a reference to SettingsView
         
         func makeUIViewController(context: Context) -> UIImagePickerController {
             let picker = UIImagePickerController()
@@ -2702,6 +2803,9 @@ struct ContentView: View {
             Coordinator(self)
         }
         
+        func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+        
+        // Coordinator class
         class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
             let parent: ImagePicker
             
@@ -2709,21 +2813,34 @@ struct ContentView: View {
                 self.parent = parent
             }
             
-            
-            
             func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+                // Dismiss the picker first
+                picker.dismiss(animated: true)
+                
+                // Handle the selected image
                 if let uiImage = info[.originalImage] as? UIImage {
                     parent.image = uiImage
                 }
                 
-                picker.dismiss(animated: true)
+                // Attempt to get the URL of the selected image
+                if let imageUrl = info[.imageURL] as? URL {
+                    // Call the uploadImageURL method from SettingsView
+                    parent.parentView.uploadImageURL(imageUrl) { success in
+                        DispatchQueue.main.async {
+                            if success {
+                                print("Image URL successfully uploaded")
+                                // Optionally, update the UI or state based on successful upload
+                            } else {
+                                print("Failed to upload image URL")
+                                // Handle the failure case
+                            }
+                        }
+                    }
+                }
             }
         }
-        
-        func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
     }
 }
-
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
