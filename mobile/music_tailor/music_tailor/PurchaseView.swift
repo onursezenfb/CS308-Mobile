@@ -13,13 +13,18 @@ struct PurchaseView: View {
     @State private var cvv = ""
     @State private var cardHolderName = ""
     @State private var purchaseMessage: String?
+    @State private var navigateToContentView = false
+    @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var userSession: UserSession
+    var subscriptionType: String
+    init(subscriptionType: String) {
+            self.subscriptionType = subscriptionType
+        }
 
     var body: some View {
         VStack (alignment: .center, spacing: 20){
-            Text("Complete Your Purchase")
-                
-                .font(.largeTitle)
-                .bold()
+            Text("Purchase \(subscriptionType) Membership")
+                            .font(.headline)
 
             Spacer()
             
@@ -37,6 +42,10 @@ struct PurchaseView: View {
                 Button("Confirm Purchase") {
                     if allFieldsCompleted() {
                         purchaseMessage = "Purchase Complete!"
+                        userSession.updateSubscription(to: subscriptionType)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                            self.presentationMode.wrappedValue.dismiss()
+                                        }
                     } else {
                         purchaseMessage = "Please fill all the card fields!"
                     }
@@ -50,6 +59,11 @@ struct PurchaseView: View {
             }
 
             Spacer()
+            if navigateToContentView {
+                NavigationLink(destination: ContentView(), isActive: $navigateToContentView) {
+                                EmptyView()
+                            }
+                        }
         }
     }
 
@@ -62,10 +76,12 @@ struct CreditCardView: View {
     @Binding var cardNumber: String
     @Binding var expiryDate: String
     @Binding var cardHolderName: String
+    
 
     var body: some View {
         VStack {
             // Card Number
+            
             HStack {
                 Text("Card Number:")
                 Spacer()
@@ -118,9 +134,13 @@ struct PurchaseButtonStyle: ButtonStyle {
     }
 }
 
+
+
 // Implement other custom views as needed
 
 
-#Preview {
-    PurchaseView()
+struct PurchaseView_Previews: PreviewProvider {
+    static var previews: some View {
+        PurchaseView(subscriptionType: "Free") // Provide a default value for previews
+    }
 }

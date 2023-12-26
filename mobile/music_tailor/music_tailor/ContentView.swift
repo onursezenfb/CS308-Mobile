@@ -2178,7 +2178,7 @@ struct ContentView: View {
                         .padding(.bottom, 20)
                         
                         NavigationLink(destination: AddFriendView()) {
-                            Text("Add Friends")
+                            Text("Follow Friends")
                                 .font(.headline)
                                 .foregroundColor(.white)
                                 .padding()
@@ -2188,9 +2188,18 @@ struct ContentView: View {
                         }
                         .padding(.bottom, 10)
                         
-                        Button(action: {
-                            // Action for "Manage Your Friends" button
-                        }) {
+                        NavigationLink(destination: RequestView()) {
+                            Text("See Requests")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding()
+                                .frame(minWidth: 0, maxWidth: .infinity)
+                                .background(themeGradient)
+                                .cornerRadius(10)
+                        }
+                        .padding(.bottom, 10)
+                        
+                        NavigationLink(destination: ManageView()) {
                             Text("Manage Your Friends")
                                 .font(.headline)
                                 .foregroundColor(.white)
@@ -2199,7 +2208,8 @@ struct ContentView: View {
                                 .background(themeGradient)
                                 .cornerRadius(10)
                         }
-                        
+                        .padding(.bottom, 10)
+                                              
                         Spacer()
                     }
                     .padding() // Adjust padding if needed
@@ -2344,7 +2354,7 @@ struct ContentView: View {
                             HStack {
                                 Text("Subscription:")
                                     .bold()
-                                Text(subscription)
+                                Text(userSession.subscription)
                                 Spacer()
                             }
                             .padding(.horizontal, 20)

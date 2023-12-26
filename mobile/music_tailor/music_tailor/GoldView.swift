@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct GoldView: View {
+    @EnvironmentObject var userSession: UserSession
+    @State private var navigateToPurchase = false
     var body: some View {
-        @EnvironmentObject var userSession: UserSession
+        
         ScrollView {
             VStack(alignment: .center, spacing: 20) {
                 Text("Music Tailor")
@@ -30,8 +32,7 @@ struct GoldView: View {
                 }
 
                 Button(action: {
-                    // Action for purchase button
-                    // Handle the purchase logic here
+                    self.navigateToPurchase = true
                 }) {
                     Text("Purchase for $8.99 a month")
                         .font(.headline)
@@ -42,6 +43,9 @@ struct GoldView: View {
                         .cornerRadius(10)
                 }
                 .padding()
+                NavigationLink(destination: PurchaseView(subscriptionType: "Gold"), isActive: $navigateToPurchase) {
+                    EmptyView()
+                }
             }
             .padding()
         }
@@ -71,4 +75,3 @@ struct GoldView_Previews: PreviewProvider {
         GoldView()
     }
 }
-

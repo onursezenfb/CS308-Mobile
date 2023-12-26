@@ -7,6 +7,13 @@ class UserSession: ObservableObject {
     @Published var surname: String?
     @Published var password: String?
     @Published var theme: String?
+    @Published var subscription: String = "Free"
+    
+    func updateSubscription(to newSubscriptionType: String) {
+            DispatchQueue.main.async {
+                self.subscription = newSubscriptionType
+            }
+        }
     
     static var mock: UserSession {
         let session = UserSession()

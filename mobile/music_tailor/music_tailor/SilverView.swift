@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct SilverView: View {
+    @EnvironmentObject var userSession: UserSession
+    @State private var navigateToPurchase = false
     var body: some View {
-        @EnvironmentObject var userSession: UserSession
         ScrollView {
             VStack(alignment: .center, spacing: 20) {
                 Text("Music Tailor")
@@ -28,20 +29,22 @@ struct SilverView: View {
                     FeatureView2(feature: "Exclusive Radio Stations", description: "Access to a variety of genre-specific online radio stations.")
                     FeatureView2(feature: "Offline Mode", description: "Download a limited number of songs for offline listening.")
                 }
-
                 Button(action: {
-                    // Action for purchase button
-                    // Handle the purchase logic here
-                }) {
-                    Text("Purchase for $3.99 a month")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.gray)
-                        .cornerRadius(10)
-                }
-                .padding()
+                                   self.navigateToPurchase = true
+                               }) {
+                                   Text("Purchase for $3.99 a month")
+                                       .font(.headline)
+                                       .foregroundColor(.white)
+                                       .padding()
+                                       .frame(maxWidth: .infinity)
+                                       .background(Color.gray)
+                                       .cornerRadius(10)
+                               }
+                               .padding()
+                // Hidden NavigationLink
+                NavigationLink(destination: PurchaseView(subscriptionType: "Silver"), isActive: $navigateToPurchase) {
+                            EmptyView()
+                        }
             }
             .padding()
         }

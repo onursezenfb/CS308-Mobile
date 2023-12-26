@@ -3,8 +3,11 @@ import SwiftUI
 struct PremiumView: View {
     var username: String
     @EnvironmentObject var userSession: UserSession
-    @EnvironmentObject var themeManager: ThemeManager
-    
+
+
+    // Define a fixed width for the buttons
+    private let buttonWidth: CGFloat = 190 // You can adjust this value as needed
+
     var body: some View {
         VStack {
             // Greeting and Title
@@ -20,29 +23,42 @@ struct PremiumView: View {
                 .padding(.bottom, 20)
             
             // Membership Buttons
-            HStack(spacing: 20) {
-                NavigationLink(destination: GoldView()) {
-                    Text("Gold Membership")
-                        .foregroundColor(.white)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.yellow) // Adjust color as needed
-                        .cornerRadius(10)
-                    
+            VStack {
+                HStack(spacing: 20) {
+                    // Gold Membership Button
+                    NavigationLink(destination: GoldView()) {
+                        Text("Gold Membership")
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(width: buttonWidth) // Apply fixed width
+                            .background(Color.yellow)
+                            .cornerRadius(10)
+                    }
+
                     // Silver Membership Button
                     NavigationLink(destination: SilverView()) {
-                                        Text("Silver Membership")
-                                            .foregroundColor(.white)
-                                            .padding()
-                                            .frame(maxWidth: .infinity)
-                                            .background(Color.gray) // Adjust color as needed
-                                            .cornerRadius(10)
-                                    }
+                        Text("Silver Membership")
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(width: buttonWidth) // Apply fixed width
+                            .background(Color.gray)
+                            .cornerRadius(10)
+                    }
                 }
-                .padding(.horizontal, 20)
+
+                // Free Membership Button
+                NavigationLink(destination: FreeView()) {
+                    Text("Free Membership")
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(width: buttonWidth) // Apply fixed width
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                }
                 
-                Spacer()
+                .padding(.top, 20) // Add space above the Free button
             }
+            .padding(.horizontal, 20) // Adjust the horizontal padding if needed
         }
     }
     
@@ -51,6 +67,5 @@ struct PremiumView: View {
         static var previews: some View {
             PremiumView(username: "SampleUser")
         }
-          
     }
 }
