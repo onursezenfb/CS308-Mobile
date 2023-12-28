@@ -89,6 +89,7 @@ struct ContentView: View {
         var songId: String
         var artistName: String
         var imageUrl: String
+        @EnvironmentObject var themeManager: ThemeManager
         @State private var song: DetailedSong?
         @State private var album: SimpleAlbum?
         @State private var averageRating: Double?
@@ -608,6 +609,7 @@ struct ContentView: View {
         var userId: String
         var albumId: String
         var performerName: String
+        @EnvironmentObject var themeManager: ThemeManager
         @State private var album: DetailedAlbum?
         @State private var averageRating: Double?
         @State private var errorMessage: String?
@@ -1112,6 +1114,7 @@ struct ContentView: View {
     struct PerformerView: View {
         var userId: String
         var artistId: String
+        @EnvironmentObject var themeManager: ThemeManager
         @State private var performer: DetailedPerformer?
         @State private var averageRating: Double?
         @GestureState private var dragOffset: CGFloat = 0
@@ -1601,9 +1604,22 @@ struct ContentView: View {
                                 Spacer().frame(width: 15)
                                 VStack(alignment: .leading) {
                                     Text(item.name)
-                                    Text("\(item.identifier)")
-                                        .font(.caption)
-                                        .foregroundColor(.gray)
+                                    if item.itemType == .song {
+                                        HStack {
+                                            if item.isExplicit ?? false {
+                                                Text("🅴") // Display circled "E" for explicit songs
+                                                    .font(.system(size: 20)) // Adjust the size as needed
+                                                    .foregroundColor(.red) // Adjust the color as needed
+                                            }
+                                            Text("\(item.identifier)")
+                                                .font(.caption)
+                                                .foregroundColor(.gray)
+                                        }
+                                    } else {
+                                        Text("\(item.identifier)")
+                                            .font(.caption)
+                                            .foregroundColor(.gray)
+                                    }
                                 }
                                 Button(action: {
                                     currentItemID = item.id
@@ -1760,40 +1776,48 @@ struct ContentView: View {
             var items: [FilterItem] = []
             print("Number of performers: \(performers.count)")
             switch currentFilter {
-            case .songs:
-                items = songs.map { song in
-                    let album = albums.first(where: { $0.album_id == song.album_id })
-                    let performer = album.flatMap { alb in
-                        performers.first(where: { $0.artist_id == alb.artist_id })
+                case .songs:
+                    items = songs.map { song in
+                        let album = albums.first(where: { $0.album_id == song.album_id })
+                        let performer = album.flatMap { alb in
+                            performers.first(where: { $0.artist_id == alb.artist_id })
+                        }
+
+                        let isExplicit = song.explicit == 1  // Check if the song is explicit
+
+                        // Check child mode and exclude explicit songs if child mode is enabled
+                        let shouldIncludeSong = userSession.childMode ? !isExplicit : true
+
+                        return shouldIncludeSong ? FilterItem(
+                            id: song.song_id,
+                            name: song.name,
+                            identifier: "Song - \(performer?.name ?? "Unknown Performer")",
+                            imageUrl: album?.image_url ?? "default_image_url",
+                            itemType: .song,
+                            isExplicit: isExplicit
+                        ) : nil
+
                     }
-                    
-                    return FilterItem(
-                        id: song.song_id,
-                        name: song.name,
-                        identifier: "Song - \(performer?.name ?? "Unknown Performer")",
-                        imageUrl: album?.image_url ?? "default_image_url",
-                        itemType: .song
-                    )
-                }
+                    .compactMap { $0 } // Remove nil entries
                 
-            case .albums:
-                items = tempalbums.map { album in
-                    let performer = performers.first(where: { $0.artist_id == album.artist_id })
-                    
-                    return FilterItem(
-                        id: album.album_id,
-                        name: album.name,
-                        identifier: "Album - \(performer?.name ?? "Unknown Performer")",
-                        imageUrl: album.image_url,
-                        itemType: .album
-                    )
-                }
-            case .performers:
-                items = tempperformers.map { performer in
-                    FilterItem(id: performer.artist_id, name: performer.name, identifier: "Performer", imageUrl: performer.image_url,itemType: .performer)
-                }
-            default:
-                break
+                case .albums:
+                    items = tempalbums.map { album in
+                        let performer = performers.first(where: { $0.artist_id == album.artist_id })
+                        
+                        return FilterItem(
+                            id: album.album_id,
+                            name: album.name,
+                            identifier: "Album - \(performer?.name ?? "Unknown Performer")",
+                            imageUrl: album.image_url,
+                            itemType: .album
+                        )
+                    }
+                case .performers:
+                    items = tempperformers.map { performer in
+                        FilterItem(id: performer.artist_id, name: performer.name, identifier: "Performer", imageUrl: performer.image_url,itemType: .performer)
+                    }
+                default:
+                    break
             }
             
             return items
@@ -1806,18 +1830,21 @@ struct ContentView: View {
         var name: String
         var identifier: String
         var imageUrl: String
-        var performerName: String? // Optional, to store the performer's name
+        var performerName: String?
         var itemType: ItemType
-        
-        init(id: String, name: String, identifier: String, imageUrl: String, performerName: String? = nil,itemType: ItemType) {
+        var isExplicit: Bool?  // Include the explicit property
+
+        init(id: String, name: String, identifier: String, imageUrl: String, performerName: String? = nil, itemType: ItemType, isExplicit: Bool? = nil) {
             self.id = id
             self.name = name
             self.identifier = identifier
             self.imageUrl = imageUrl
             self.performerName = performerName
             self.itemType = itemType
+            self.isExplicit = isExplicit
         }
     }
+
     
     struct AlbumSearchResult: Decodable {
         var album_id: String
@@ -1880,10 +1907,18 @@ struct ContentView: View {
         var song_id: String
         var name: String
         var album_id: String
-        //        var image_url: String
-        // Add other properties as needed
+        var explicit: Int  // Update the type to Int
+        
+        // ... other properties ...
+
         var id: String { song_id }
+
+        private enum CodingKeys: String, CodingKey {
+            case song_id, name, album_id, explicit
+            // ... other coding keys ...
+        }
     }
+
     
     struct Album: Identifiable, Decodable {
         var album_id: String
@@ -2591,6 +2626,7 @@ struct ContentView: View {
         @Binding var profileImage: UIImage?
         @State private var navigateToPremium = false
         @State private var showingChangeThemeView = false
+        @State private var childModeEnabled = false
         
         
         var body: some View {
@@ -2647,7 +2683,7 @@ struct ContentView: View {
                         
                         // Hidden NavigationLink that listens to navigateToPremium
                         NavigationLink(
-                            destination: PremiumView(username: userSession.username ?? "User"),
+                            destination: PremiumView(),
                             isActive: $navigateToPremium
                         ) {
                             EmptyView()
@@ -2693,6 +2729,27 @@ struct ContentView: View {
                         }
                         
                         .buttonStyle(SettingsButtonStyle())
+                        
+                        HStack (spacing: -35){
+                            Spacer(minLength: 350)
+
+
+                            Text("Child Mode")
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(themeManager.themeColor)
+                                .cornerRadius(10)
+                                .frame(width: 200)
+                                                        
+                            Toggle("", isOn: $userSession.childMode)
+                                .toggleStyle(SwitchToggleStyle(tint: themeManager.themeColor))
+                                .onChange(of: userSession.childMode) { newValue in
+                                    userSession.setChildMode(newValue)
+                                }
+                            Spacer(minLength: 400)
+
+                        }
+
                         
                         
                         NavigationLink(
@@ -2856,5 +2913,6 @@ struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
             .environmentObject(UserSession.mock)
+            .environmentObject(ThemeManager()) // Add ThemeManager as an environment object
     }
 }
