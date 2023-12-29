@@ -29,6 +29,7 @@ struct User: Identifiable, Decodable {
 struct AddFriendView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var userSession: UserSession // Assuming this holds the logged-in user's info
+    @EnvironmentObject var themeManager: ThemeManager
     @State private var searchText = ""
     @State private var searchResults: [User] = []
     @State private var requestSent: [String: Bool] = [:]
@@ -39,11 +40,11 @@ struct AddFriendView: View {
     var body: some View {
             VStack {
             
-                Text("Add a Friend").font(.largeTitle).bold().padding().foregroundColor(.pink)
+                Text("Add a Friend").font(.largeTitle).bold().padding().foregroundColor(themeManager.themeColor)
 
                 HStack {
                     SearchBar(text: $searchText).padding(.horizontal)
-                    Button("Search") { performSearch() }.foregroundColor(.pink).padding()
+                    Button("Search") { performSearch() }.foregroundColor(themeManager.themeColor).padding()
                 }
                 
                 if showingOwnNameAlert {
