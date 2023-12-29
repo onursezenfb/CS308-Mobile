@@ -10,6 +10,11 @@ import SwiftUI
 struct SilverView: View {
     @EnvironmentObject var userSession: UserSession
     @State private var navigateToPurchase = false
+    enum AlertType {
+            case silverMember, downgradeToSilver, none
+        }
+    @State private var alertType: AlertType = .none
+
     var body: some View {
         ScrollView {
             VStack(alignment: .center, spacing: 20) {
@@ -30,21 +35,46 @@ struct SilverView: View {
                     FeatureView2(feature: "Offline Mode", description: "Download a limited number of songs for offline listening.")
                 }
                 Button(action: {
-                                   self.navigateToPurchase = true
-                               }) {
-                                   Text("Purchase for $3.99 a month")
-                                       .font(.headline)
-                                       .foregroundColor(.white)
-                                       .padding()
-                                       .frame(maxWidth: .infinity)
-                                       .background(Color.gray)
-                                       .cornerRadius(10)
-                               }
-                               .padding()
-                // Hidden NavigationLink
-                NavigationLink(destination: PurchaseView(subscriptionType: "Silver"), isActive: $navigateToPurchase) {
-                            EmptyView()
-                        }
+                    if userSession.subscription == "Silver" {
+                        alertType = .silverMember
+                    } else if userSession.subscription == "Gold" {
+                        alertType = .downgradeToSilver
+                    } else {
+                        navigateToPurchase = true
+                    }
+                }) {
+                    Text("Purchase for $8.99 a month")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.gray)
+                        .cornerRadius(10)
+                }
+                .alert(isPresented: Binding<Bool>(
+                    get: { alertType != .none },
+                    set: { if !$0 { alertType = .none } }
+                )) {
+                    switch alertType {
+                    case .silverMember:
+                        return Alert(title: Text("Already a Member"), message: Text("You are already a Silver member!"), dismissButton: .default(Text("OK")))
+                    case .downgradeToSilver:
+                        return Alert(
+                            title: Text("Downgrade to Silver"),
+                            message: Text("Are you sure you want to downgrade to Silver?"),
+                            primaryButton: .destructive(Text("Yes")) {
+                                navigateToPurchase = true
+                            },
+                            secondaryButton: .cancel()
+                        )
+                    default:
+                        return Alert(title: Text("Error"), message: Text("Unexpected error occurred."))
+                    }
+                }
+
+                NavigationLink(destination: PurchaseView(subscriptionType: "Silver", rateLimitType: "1000"), isActive: $navigateToPurchase) {
+                    EmptyView()
+                }
             }
             .padding()
         }
@@ -70,6 +100,8 @@ struct FeatureView2: View {
 }
 
 
-#Preview {
-    SilverView()
+struct SilverView_Previews: PreviewProvider {
+    static var previews: some View {
+        SilverView().environmentObject(UserSession.mock)
+    }
 }

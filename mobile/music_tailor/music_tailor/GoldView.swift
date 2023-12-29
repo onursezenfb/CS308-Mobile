@@ -10,6 +10,7 @@ import SwiftUI
 struct GoldView: View {
     @EnvironmentObject var userSession: UserSession
     @State private var navigateToPurchase = false
+    @State private var showAlert = false
     var body: some View {
         
         ScrollView {
@@ -32,9 +33,13 @@ struct GoldView: View {
                 }
 
                 Button(action: {
-                    self.navigateToPurchase = true
+                    if userSession.subscription == "Gold" {
+                        showAlert = true
+                    } else {
+                        navigateToPurchase = true
+                    }
                 }) {
-                    Text("Purchase for $8.99 a month")
+                    Text("Purchase for $14.99 a month")
                         .font(.headline)
                         .foregroundColor(.white)
                         .padding()
@@ -42,8 +47,11 @@ struct GoldView: View {
                         .background(Color.yellow)
                         .cornerRadius(10)
                 }
-                .padding()
-                NavigationLink(destination: PurchaseView(subscriptionType: "Gold"), isActive: $navigateToPurchase) {
+                .alert(isPresented: $showAlert) {
+                    Alert(title: Text("Already a Member"), message: Text("You are already a Gold member!"), dismissButton: .default(Text("OK")))
+                }
+
+                NavigationLink(destination: PurchaseView(subscriptionType: "Gold", rateLimitType: "5000"), isActive: $navigateToPurchase) {
                     EmptyView()
                 }
             }

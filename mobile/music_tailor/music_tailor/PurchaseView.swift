@@ -16,10 +16,18 @@ struct PurchaseView: View {
     @State private var navigateToContentView = false
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var userSession: UserSession
+    @State private var subscription: String = ""
+    @State private var rateLimit: String = ""
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+    
     var subscriptionType: String
-    init(subscriptionType: String) {
-            self.subscriptionType = subscriptionType
-        }
+    var rateLimitType: String
+    init(subscriptionType: String, rateLimitType: String) {
+        self.subscriptionType = subscriptionType
+        self.rateLimitType = rateLimitType
+    }
+
 
     var body: some View {
         VStack (alignment: .center, spacing: 20){
@@ -42,10 +50,15 @@ struct PurchaseView: View {
                 Button("Confirm Purchase") {
                     if allFieldsCompleted() {
                         purchaseMessage = "Purchase Complete!"
+                        subscription = subscriptionType
+                        rateLimit = rateLimitType
                         userSession.updateSubscription(to: subscriptionType)
+                        userSession.updateRateLimit(to: rateLimit)
+                        updateUserInformation()
+                        userSession.fetchAndUpdateUserData() // Fetch the latest user data
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                            self.presentationMode.wrappedValue.dismiss()
-                                        }
+                            self.presentationMode.wrappedValue.dismiss()
+                        }
                     } else {
                         purchaseMessage = "Please fill all the card fields!"
                     }
@@ -70,7 +83,61 @@ struct PurchaseView: View {
     private func allFieldsCompleted() -> Bool {
         return !cardNumber.isEmpty && !expiryDate.isEmpty && !cvv.isEmpty && !cardHolderName.isEmpty
     }
+    
+    private func updateUserInformation() {
+        guard let url = URL(string: "http://127.0.0.1:8000/api/users/\(userSession.username ?? "")") else {
+            print("Invalid URL")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let updatedUser = PurchaseUser(
+            subscription: subscription, // Use the updated subscription here
+            rate_limit: rateLimit
+        )
+        
+        do {
+            let jsonData = try JSONEncoder().encode(updatedUser)
+            request.httpBody = jsonData
+            
+            let task = URLSession.shared.dataTask(with: request) { [self] data, response, error in
+                if let error = error {
+                    print("Error updating user data: \(error)")
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    print("Error: Invalid response from server")
+                    return
+                }
+                
+                if httpResponse.statusCode == 200 {
+                    DispatchQueue.main.async {
+                        print("Successfull subscription plan update!")
+                        self.alertMessage = "Your subscription plan is successfully updated!"
+                        self.showAlert = true
+                    }
+                } else {
+                    print("Error: Update failed with status code \(httpResponse.statusCode)")
+                }
+            }
+            task.resume()
+        } catch {
+            print("Error encoding user data")
+        }
+    }
+    
 }
+
+// User struct for encoding
+struct PurchaseUser: Codable {
+    var subscription: String
+    var rate_limit: String
+}
+
 
 struct CreditCardView: View {
     @Binding var cardNumber: String
@@ -141,6 +208,6 @@ struct PurchaseButtonStyle: ButtonStyle {
 
 struct PurchaseView_Previews: PreviewProvider {
     static var previews: some View {
-        PurchaseView(subscriptionType: "Free") // Provide a default value for previews
+        PurchaseView(subscriptionType: "Free", rateLimitType: "100") // Provide a default value for previews
     }
 }

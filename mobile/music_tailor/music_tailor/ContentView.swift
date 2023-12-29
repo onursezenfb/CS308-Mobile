@@ -2263,184 +2263,197 @@ struct ContentView: View {
     
     
     struct ProfileView: View {
-        @EnvironmentObject var themeManager: ThemeManager
-        @EnvironmentObject var userSession: UserSession
-        @State private var profileImage: UIImage? = nil
-        @State private var selectedImage: UIImage?
-        @State private var showingSettings = false
-        @State private var email: String = ""
-        @State private var dateOfBirth: Date = Date()
-        @State private var language: String = ""
-        @State private var subscription: String = ""
-        @State private var rateLimit: String = ""
-        @State private var theme: String = ""
-        @State private var showAlert = false
-        @State private var alertMessage = ""
-        
-        private let dateFormatter: DateFormatter = {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd"
-            return formatter
-        }()
-        
-        var body: some View {
-            NavigationView {
-                VStack {
-                    VStack(alignment: .leading, spacing: 0) {
-                        HStack {
-                            Text("Your Personal")
-                                .font(.largeTitle)
-                                .bold()
-                                .foregroundColor(.black)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal)
-                            Spacer()
-                            
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .foregroundColor(themeManager.themeColor.opacity(0.7))
-                                    .frame(width: 40, height: 40)
+            @EnvironmentObject var themeManager: ThemeManager
+            @EnvironmentObject var userSession: UserSession
+            @State private var profileImage: UIImage? = nil
+            @State private var selectedImage: UIImage?
+            @State private var showingSettings = false
+            @State private var email: String = ""
+            @State private var dateOfBirth: Date = Date()
+            @State private var language: String = ""
+            @State private var subscription: String = ""
+            @State private var rateLimit: String = ""
+            @State private var theme: String = ""
+            @State private var showAlert = false
+            @State private var alertMessage = ""
+            
+            private let dateFormatter: DateFormatter = {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy-MM-dd"
+                return formatter
+            }()
+            
+            var body: some View {
+                NavigationView {
+                    VStack {
+                        VStack(alignment: .leading, spacing: 0) {
+                            HStack {
+                                Text("Your Personal")
+                                    .font(.largeTitle)
+                                    .bold()
+                                    .foregroundColor(.black)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal)
+                                Spacer()
+
                                 Button(action: {
-                                    showingSettings.toggle()
+                                    userSession.fetchAndUpdateUserData()
                                 }) {
-                                    Image(systemName: "gear")
+                                    Image(systemName: "arrow.clockwise")
                                         .font(.title)
-                                        .foregroundColor(.white)
+                                        .foregroundColor(themeManager.themeColor)
+                                }
+                                .padding(.trailing, 20)
+                                
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .foregroundColor(themeManager.themeColor.opacity(0.7))
+                                        .frame(width: 40, height: 40)
+                                    Button(action: {
+                                        showingSettings.toggle()
+                                    }) {
+                                        Image(systemName: "gear")
+                                            .font(.title)
+                                            .foregroundColor(.white)
+                                    }
+                                }
+                                .padding(.trailing, 20)
+                                .sheet(isPresented: $showingSettings) {
+                                    SettingsView(profileImage: $profileImage) // Show the settings view when the button is tapped
                                 }
                             }
-                            .padding(.trailing, 20)
-                            .sheet(isPresented: $showingSettings) {
-                                SettingsView(profileImage: $profileImage) // Show the settings view when the button is tapped
+                            
+                            
+                            HStack {
+                                Text("Music Tailor")
+                                    .font(Font.system(size: 32, design: .rounded))
+                                    .bold()
+                                    .foregroundColor(themeManager.themeColor)
+                                    .padding(.leading, 20)
+                                VStack {
+                                    Text("Profile")
+                                        .font(.custom("Arial-BoldMT", size: 30))
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.black)
+                                }
+                                Spacer()
                             }
                         }
+                        .padding(.bottom, 10)
+                        .background(themeManager.themeColor.opacity(0.15))
+                        
+                        if let image = selectedImage ?? profileImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .frame(width: 120, height: 120)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                                .shadow(radius: 7)
+                        } else {
+                            Image(systemName: "person")
+                                .padding(.top, 50)
+                                .font(.system(size: 120))
+                                .foregroundColor(themeManager.themeColor.opacity(0.15))
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 120, height: 120)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                                .shadow(radius: 7)
+                                .padding(.top, 30)
+                        }
+                        
+                        // User's name and username
+                        Text("\(userSession.name ?? "") \(userSession.surname ?? "")")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .padding(.top, 10)
+                            .padding(.bottom, 1)
+                        
+                        Text("@\(userSession.username ?? "")")
+                            .foregroundColor(themeManager.themeColor)
                         
                         
-                        HStack {
-                            Text("Music Tailor")
-                                .font(Font.system(size: 32, design: .rounded))
-                                .bold()
-                                .foregroundColor(themeManager.themeColor)
-                                .padding(.leading, 20)
-                            VStack {
-                                Text("Profile")
-                                    .font(.custom("Arial-BoldMT", size: 30))
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.black)
+                        // Description text
+                        //                    Text("This is a brief description about yourself. You can customize it based on your preferences.")
+                        //                        .font(.custom("Avenir Next", size: 18))
+                        //                        .italic()
+                        //                        .padding(.horizontal, 20)
+                        //                        .multilineTextAlignment(.center)
+                        //
+                        
+                        ScrollView {
+                            // Editable user information fields
+                            Group {
+                                TextField("Email", text: $email)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, -10)
+                                DatePicker("Date of Birth", selection: $dateOfBirth, displayedComponents: .date)
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, -10)
+                                TextField("Language", text: $language)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, -10)
+                                HStack {
+                                    Text("Subscription:")
+                                        .bold()
+                                    Text(userSession.subscription)
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, -10)
+                                HStack {
+                                    Text("Rate Limit:")
+                                        .bold()
+                                    Text(userSession.rateLimit)
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, -10)
+                                .padding(.bottom, 10)
                             }
+                            .padding()
+                            
+                            //Spacer()
+                            
+                            // Update Button
+                            Button(action: updateUserInformation) {
+                                Text("Update")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(themeManager.themeColor)
+                                    .cornerRadius(10)
+                            }
+                            .padding(.horizontal)
+                            
+                            
+                            .alert(isPresented: $showAlert) {
+                                Alert(
+                                    title: Text("Update Successful"),
+                                    message: Text(alertMessage),
+                                    dismissButton: .default(Text("OK"))
+                                )
+                            }
+                            .padding(.bottom, 20)
+                            .onAppear(perform: fetchUserData)
+                            
                             Spacer()
                         }
                     }
-                    .padding(.bottom, 10)
-                    .background(themeManager.themeColor.opacity(0.15))
-                    
-                    if let image = selectedImage ?? profileImage {
-                        Image(uiImage: image)
-                            .resizable()
-                            .frame(width: 120, height: 120)
-                            .clipShape(Circle())
-                            .overlay(Circle().stroke(Color.white, lineWidth: 4))
-                            .shadow(radius: 7)
-                    } else {
-                        Image(systemName: "person")
-                            .padding(.top, 50)
-                            .font(.system(size: 120))
-                            .foregroundColor(themeManager.themeColor.opacity(0.15))
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 120, height: 120)
-                            .clipShape(Circle())
-                            .overlay(Circle().stroke(Color.white, lineWidth: 4))
-                            .shadow(radius: 7)
-                            .padding(.top, 30)
+                    .padding(.bottom, 20)
+                    .onAppear(perform: fetchUserData)
+                    .onAppear {
+                        userSession.fetchAndUpdateUserData() // Fetch and update user data when the view appears
+                        }
+                    .onChange(of: userSession.theme) { _ in
+                        fetchUserData() // Fetch data when the theme changes
                     }
-                    
-                    // User's name and username
-                    Text("\(userSession.name ?? "") \(userSession.surname ?? "")")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .padding(.top, 10)
-                        .padding(.bottom, 1)
-                    
-                    Text("@\(userSession.username ?? "")")
-                        .foregroundColor(themeManager.themeColor)
-                    
-                    
-                    // Description text
-                    //                    Text("This is a brief description about yourself. You can customize it based on your preferences.")
-                    //                        .font(.custom("Avenir Next", size: 18))
-                    //                        .italic()
-                    //                        .padding(.horizontal, 20)
-                    //                        .multilineTextAlignment(.center)
-                    //
-                    
-                    ScrollView {
-                        // Editable user information fields
-                        Group {
-                            TextField("Email", text: $email)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .padding(.horizontal, 20)
-                                .padding(.vertical, -10)
-                            DatePicker("Date of Birth", selection: $dateOfBirth, displayedComponents: .date)
-                                .padding(.horizontal, 20)
-                                .padding(.vertical, -10)
-                            TextField("Language", text: $language)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .padding(.horizontal, 20)
-                                .padding(.vertical, -10)
-                            HStack {
-                                Text("Subscription:")
-                                    .bold()
-                                Text(userSession.subscription)
-                                Spacer()
-                            }
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, -10)
-                            HStack {
-                                Text("Rate Limit:")
-                                    .bold()
-                                Text(rateLimit)
-                                Spacer()
-                            }
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, -10)
-                            .padding(.bottom, 10)
-                        }
-                        .padding()
-                        
-                        //Spacer()
-                        
-                        // Update Button
-                        Button(action: updateUserInformation) {
-                            Text("Update")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(themeManager.themeColor)
-                                .cornerRadius(10)
-                        }
-                        .padding(.horizontal)
-                        
-                        
-                        .alert(isPresented: $showAlert) {
-                            Alert(
-                                title: Text("Update Successful"),
-                                message: Text(alertMessage),
-                                dismissButton: .default(Text("OK"))
-                            )
-                        }
-                        .padding(.bottom, 20)
-                        .onAppear(perform: fetchUserData)
-                        
-                        Spacer()
-                    }
-                }
-                .padding(.bottom, 20)
-                .onAppear(perform: fetchUserData)
-                .onChange(of: userSession.theme) { _ in
-                    fetchUserData() // Fetch data when the theme changes
                 }
             }
-        }
+            
         
         
         private func fetchUserData() {
