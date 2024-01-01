@@ -15,6 +15,7 @@
 		046D4F5D2B260F0900937551 /* TopAlbumsAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046D4F5C2B260F0900937551 /* TopAlbumsAnalysisView.swift */; };
 		047454302B35FBB80065A4CC /* ChangeThemeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0474542F2B35FBB80065A4CC /* ChangeThemeView.swift */; };
 		047454322B35FD460065A4CC /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047454312B35FD460065A4CC /* ThemeManager.swift */; };
+		04ABF2D62B42D032009F2B17 /* PublicProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04ABF2D52B42D032009F2B17 /* PublicProfileView.swift */; };
 		04CA099A2B26369200688B5F /* ArtistAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04CA09992B26369200688B5F /* ArtistAnalysisView.swift */; };
 		04F245DC2B24DDCF00D283F8 /* MoodyMix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F245DB2B24DDCF00D283F8 /* MoodyMix.swift */; };
 		04F245DE2B24DDFA00D283F8 /* EnergeticMix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F245DD2B24DDFA00D283F8 /* EnergeticMix.swift */; };
@@ -63,6 +64,7 @@
 		046D4F5C2B260F0900937551 /* TopAlbumsAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopAlbumsAnalysisView.swift; sourceTree = "<group>"; };
 		0474542F2B35FBB80065A4CC /* ChangeThemeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangeThemeView.swift; sourceTree = "<group>"; };
 		047454312B35FD460065A4CC /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
+		04ABF2D52B42D032009F2B17 /* PublicProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicProfileView.swift; sourceTree = "<group>"; };
 		04CA09992B26369200688B5F /* ArtistAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtistAnalysisView.swift; sourceTree = "<group>"; };
 		04F245DB2B24DDCF00D283F8 /* MoodyMix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodyMix.swift; sourceTree = "<group>"; };
 		04F245DD2B24DDFA00D283F8 /* EnergeticMix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnergeticMix.swift; sourceTree = "<group>"; };
@@ -161,6 +163,7 @@
 				0474542F2B35FBB80065A4CC /* ChangeThemeView.swift */,
 				044148B32B3AFB2400BA99D2 /* RequestView.swift */,
 				044148B12B3AFAF700BA99D2 /* ManageView.swift */,
+				04ABF2D52B42D032009F2B17 /* PublicProfileView.swift */,
 			);
 			path = music_tailor;
 			sourceTree = "<group>";
@@ -326,6 +329,7 @@
 				93F675942B32410C003C2735 /* PurchaseView.swift in Sources */,
 				93F675922B323CBD003C2735 /* SilverView.swift in Sources */,
 				93CBA1E82B1F3D9C0062A920 /* ReccomendationView.swift in Sources */,
+				04ABF2D62B42D032009F2B17 /* PublicProfileView.swift in Sources */,
 				044148B42B3AFB2400BA99D2 /* RequestView.swift in Sources */,
 				9351CF432AF4CF440098CD8F /* music_tailorApp.swift in Sources */,
 				047454322B35FD460065A4CC /* ThemeManager.swift in Sources */,
