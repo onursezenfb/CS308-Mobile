@@ -1904,20 +1904,21 @@ struct ContentView: View {
     
     
     struct Song: Identifiable, Decodable {
-        var song_id: String
-        var name: String
-        var album_id: String
-        var explicit: Int  // Update the type to Int
-        
-        // ... other properties ...
+            var song_id: String
+            var name: String
+            var album_id: String
+            var explicit: Int  // Update the type to Int
+            
+            // ... other properties ...
 
-        var id: String { song_id }
+            var id: String { song_id }
 
-        private enum CodingKeys: String, CodingKey {
-            case song_id, name, album_id, explicit
-            // ... other coding keys ...
+            private enum CodingKeys: String, CodingKey {
+                case song_id, name, album_id, explicit
+                // ... other coding keys ...
+            }
         }
-    }
+
 
     
     struct Album: Identifiable, Decodable {
@@ -2341,6 +2342,17 @@ struct ContentView: View {
                         }
                         .padding(.bottom, 10)
                         .background(themeManager.themeColor.opacity(0.15))
+                        
+                        NavigationLink(destination: PublicProfileView()) {
+                            Text("Go to Your Public Profile!")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(themeManager.themeColor)
+                                .cornerRadius(10)
+                        }
+                        .padding(.horizontal)
                         
                         if let image = selectedImage ?? profileImage {
                             Image(uiImage: image)

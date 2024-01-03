@@ -21,6 +21,12 @@ struct PublicProfileView: View {
         @State private var theme: String = ""
         @State private var showAlert = false
         @State private var alertMessage = ""
+        @State private var playlists: [Playlist] = []
+        @State private var showingCreatePlaylistSheet = false
+        @State private var newPlaylistName = ""
+        @State private var showingPlaylistDetail = false
+        @State private var selectedPlaylist: Playlist?
+
         
         private let dateFormatter: DateFormatter = {
             let formatter = DateFormatter()
@@ -91,15 +97,7 @@ struct PublicProfileView: View {
                     Text("@\(userSession.username ?? "")")
                         .foregroundColor(themeManager.themeColor)
                     
-                    
-                    // Description text
-                    //                    Text("This is a brief description about yourself. You can customize it based on your preferences.")
-                    //                        .font(.custom("Avenir Next", size: 18))
-                    //                        .italic()
-                    //                        .padding(.horizontal, 20)
-                    //                        .multilineTextAlignment(.center)
-                    //
-                    
+                   
                     ScrollView {
                         // Editable user information fields
                         Group {
@@ -114,11 +112,73 @@ struct PublicProfileView: View {
                                 Text("Your Playlists")
                                     .bold()
                                 Spacer()
+                                
+                                Button(action: {
+                                                        showingCreatePlaylistSheet = true
+                                                    }) {
+                                                        Image(systemName: "plus.circle.fill")
+                                                            .foregroundColor(themeManager.themeColor)
+                                                            .padding()
+                                                    }
+                                                    .sheet(isPresented: $showingCreatePlaylistSheet) {
+                                                        Text("Enter Playlist Name")
+                                                            .font(.headline)
+                                                            .padding()
+
+                                                        TextField("Playlist Name", text: $newPlaylistName)
+                                                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                                                            .padding()
+
+                                                        Button("Create") {
+                                                            createPlaylist(named: newPlaylistName)
+                                                            showingCreatePlaylistSheet = false
+                                                            newPlaylistName = ""
+                                                        }
+                                                        .disabled(newPlaylistName.trimmingCharacters(in: .whitespaces).isEmpty)
+                                                        .padding()
+
+                                                        Button("Cancel") {
+                                                            showingCreatePlaylistSheet = false
+                                                            newPlaylistName = ""
+                                                        }
+                                                        .padding()
+                                                    }
+                                
+                                
                             }
                             .padding(.horizontal, 20)
                             .padding(.vertical, -10)
                             .padding(.bottom, 10)
-                        }
+                            
+                            // Inside PublicProfileView
+
+                            
+
+/*
+                            List(playlists, id: \.id) { playlist in
+                                                        HStack {
+                                                            Image(systemName: "photo")
+                                                                .resizable()
+                                                                .frame(width: 50, height: 50)
+                                                                .background(Color.gray.opacity(0.3))
+                                                                .cornerRadius(5)
+                                                            Text(playlist.playlist_name)
+                                                        }
+                                                    }
+*/
+                            // Wrap this in your existing ScrollView
+                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                                ForEach(playlists, id: \.id) { playlist in
+                                    Button(action: {
+                                        selectedPlaylist = playlist
+                                        showingPlaylistDetail = true
+                                    }) {
+                                        PlaylistItemView(playlist: playlist, onDelete: deletePlaylist)
+                                    }
+                                }
+                            }
+                                            .padding(.horizontal)
+                                        }
                         .padding()
                         Spacer()
                     }
@@ -126,17 +186,29 @@ struct PublicProfileView: View {
                 .padding(.bottom, 20)
                 .onAppear(perform: fetchUserData)
                 .onAppear {
-                    userSession.fetchAndUpdateUserData() // Fetch and update user data when the view appears
-                    }
+                    userSession.fetchAndUpdateUserData()
+                    fetchUserData()
+                    fetchPlaylists() // Ensure this is called
+                }
                 .onChange(of: userSession.theme) { _ in
                     fetchUserData() // Fetch data when the theme changes
+                    
                 }
+                .sheet(isPresented: $showingPlaylistDetail) {
+                            if let selectedPlaylist = selectedPlaylist {
+                                PlaylistDetailView(playlist: selectedPlaylist)
+                                    .environmentObject(userSession)
+                                    // Add any other necessary environment objects here
+                            }
+                        }
+                
             }
         }
         
     
     
     private func fetchUserData() {
+        print("Fetching user data...")
         guard let url = URL(string: "http://127.0.0.1:8000/api/users/\(userSession.username ?? "")") else {
             print("Invalid URL")
             return
@@ -159,27 +231,122 @@ struct PublicProfileView: View {
             }
             
             do {
-                if let fetchedData = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    DispatchQueue.main.async {
-                        self.updateUserData(with: fetchedData)
-                    }
-                }
-            } catch {
-                print("Error: Could not decode JSON")
-            }
-            
-            do {
                 let fetchedUser = try JSONDecoder().decode(User.self, from: data)
                 DispatchQueue.main.async {
                     self.updateUserImage(with: fetchedUser)
                 }
             } catch {
-                print("Error: Could not decode user data")
+                print("Error: Could not decode user data: \(error)")
             }
         }
         
         task.resume()
     }
+
+    
+    private func fetchPlaylists() {
+        print("Fetching playlists...")
+        let username = userSession.username ?? ""
+        guard let url = URL(string: "http://127.0.0.1:8000/api/playlists/\(username)") else {
+            print("Invalid URL")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Network error: \(error.localizedDescription)")
+                return
+            }
+
+            if let httpResponse = response as? HTTPURLResponse {
+                print("HTTP Status Code: \(httpResponse.statusCode)")
+            }
+
+            if let data = data {
+                do {
+                    let response = try JSONDecoder().decode(PlaylistsResponse.self, from: data)
+                    DispatchQueue.main.async {
+                        self.playlists = response.playlists
+                        print("Playlists fetched: \(self.playlists)")
+                    }
+                } catch {
+                    print("Decoding error: \(error)")
+                }
+            } else {
+                print("No data received")
+            }
+        }.resume()
+    }
+    
+    private func deletePlaylist(playlist: Playlist) {
+        guard let url = URL(string: "http://127.0.0.1:8000/api/playlist/\(playlist.id)") else {
+            print("Invalid URL")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                DispatchQueue.main.async {
+                    // Remove the playlist from the list
+                    self.playlists.removeAll { $0.id == playlist.id }
+                }
+            } else {
+                // Handle errors
+                print("Error deleting playlist: \(error?.localizedDescription ?? "Unknown error")")
+            }
+        }.resume()
+    }
+
+
+    private func createPlaylist(named name: String) {
+        let url = URL(string: "http://127.0.0.1:8000/api/playlists/create-with-user")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        let body: [String: String] = ["username": userSession.username ?? "", "playlist_name": name]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error: \(error.localizedDescription)")
+                return
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                print("HTTP Error: Status code \((response as? HTTPURLResponse)?.statusCode ?? 0)")
+                return
+            }
+
+            guard let data = data else {
+                print("No data received")
+                return
+            }
+
+            // Print the raw JSON response as a string for debugging
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("JSON String: \(jsonString)")
+            }
+
+            // Attempt to decode the data into the Playlist struct
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                        DispatchQueue.main.async {
+                            self.fetchPlaylists()  // Refetch playlists
+                            self.newPlaylistName = ""
+                        }
+                    } else {
+                        // Handle any errors, such as decoding errors or unsuccessful HTTP responses
+                        print("Decoding error: \(error?.localizedDescription ?? "Unknown error")")
+                    }
+        }.resume()
+    }
+
     
     private func loadProfileImage(from urlString: String?) {
         guard let urlString = urlString, let url = URL(string: urlString) else { return }
@@ -307,6 +474,65 @@ struct PublicUser: Codable {
     var theme: String?
     var image: String?
 }
+
+struct PlaylistsResponse: Codable {
+    var success: Bool?
+    var playlists: [Playlist]
+}
+
+
+struct Playlist: Codable, Identifiable {
+    var id: Int
+    var playlist_name: String
+    var created_at: String
+    var updated_at: String
+    var pivot: Pivot
+
+    private enum CodingKeys: String, CodingKey {
+        case id, playlist_name, created_at, updated_at, pivot
+    }
+}
+
+struct Pivot: Codable {
+    var username: String
+    var playlist_id: Int
+}
+
+struct PlaylistItemView: View {
+    let playlist: Playlist
+    var onDelete: (Playlist) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            // Default image for playlists
+            Image(systemName: "music.note.list")
+                .resizable()
+                .scaledToFit()
+                .padding(30)
+                .background(Color.gray.opacity(0.3))
+                .frame(height: 150)
+                .cornerRadius(10)
+                .shadow(radius: 5)
+
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(playlist.playlist_name)
+                        .font(.headline)
+                        .lineLimit(1)
+                    // Additional playlist details can go here
+                }
+                Spacer()
+                Button(action: { onDelete(playlist) }) {
+                    Image(systemName: "minus.circle.fill")
+                        .foregroundColor(.red)
+                }
+            }
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 8)
+    }
+}
+
 
 struct PublicProfileView_Previews: PreviewProvider {
     static var previews: some View {
