@@ -126,7 +126,8 @@ struct PublicProfileView: View {
                                                             .padding()
 
                                                         TextField("Playlist Name", text: $newPlaylistName)
-                                                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                                                            .autocapitalization(.none)
+                                                            .textFieldStyle(    RoundedBorderTextFieldStyle())
                                                             .padding()
 
                                                         Button("Create") {

@@ -25,6 +25,7 @@ struct PlaylistDetailView: View {
                 .padding()
 
             TextField("Search songs...", text: $searchText)
+                .autocapitalization(.none)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding()
                 .onChange(of: searchText, perform: { value in
