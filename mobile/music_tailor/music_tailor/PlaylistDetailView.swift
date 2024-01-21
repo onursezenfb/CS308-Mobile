@@ -17,9 +17,15 @@ struct PlaylistDetailView: View {
     @State private var showingAddUserSheet = false
     @State private var userSearchText: String = ""
     @State private var userSearchResults: [User] = []
+    @State private var blockedUsers: [BlockedUser] = []
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+
+
 
     var body: some View {
         VStack {
+            
             Text(playlist.playlist_name)
                 .font(.largeTitle)
                 .fontWeight(.bold)
@@ -41,6 +47,7 @@ struct PlaylistDetailView: View {
             Button("Add Users to This Playlist!") {
                             showingAddUserSheet = true
                         }
+            
                         .padding()
                         .background(LinearGradient(gradient: Gradient(colors: [themeManager.themeColor, themeManager.themeColor.opacity(0.7)]), startPoint: .top, endPoint: .bottom))
                         .cornerRadius(15)
@@ -90,20 +97,25 @@ struct PlaylistDetailView: View {
                                    })
 
                                List(userSearchResults, id: \.id) { user in
-                                   HStack {
-                                       Text(user.username)
-                                       Spacer()
-                                       Button(action: {
-                                           addUserToPlaylist(username: user.username)
-                                           showingAddUserSheet = false // Close the sheet
-                                       }) {
-                                           Image(systemName: "plus.circle.fill")
-                                               .foregroundColor(.green)
+                                           HStack {
+                                               Text(user.username)
+                                               Spacer()
+                                               if blockedUsers.contains(where: { $0.blockedUsername == user.username }) {
+                                                   Text("Blocked")
+                                                       .foregroundColor(.red)
+                                               } else {
+                                                   Button(action: {
+                                                       addUserToPlaylist(username: user.username)
+                                                       showingAddUserSheet = false // Close the sheet
+                                                   }) {
+                                                       Image(systemName: "plus.circle.fill")
+                                                           .foregroundColor(.green)
+                                                   }
+                                               }
+                                           }
                                        }
                                    }
-                               }
-                           }
-                           .padding()
+                                   .padding()
                        }
         
             List {
@@ -141,6 +153,10 @@ struct PlaylistDetailView: View {
         }
         .navigationBarTitle("Playlist Details", displayMode: .inline)
         .onAppear(perform: fetchPlaylistSongs)
+        .onAppear(perform: fetchBlockedUsers)
+        .alert(isPresented: $showAlert) {
+                Alert(title: Text("Alert"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+            }
     }
     
     func searchUsers(query: String) {
@@ -167,24 +183,67 @@ struct PlaylistDetailView: View {
         }
     
     func addUserToPlaylist(username: String) {
-            guard let url = URL(string: "http://127.0.0.1:8000/api/playlist/\(playlist.id)/users") else { return }
-
-            var request = URLRequest(url: url)
-            request.httpMethod = "POST"
-            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-            let body: [String: [String]] = ["usernames": [username]]
-            request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
-
-            URLSession.shared.dataTask(with: request) { data, response, error in
-                if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-                    print("User added to playlist successfully")
-                    // Handle successful addition here, e.g., show a confirmation message
-                } else {
-                    // Handle error
-                    print("Error adding user to playlist: \(error?.localizedDescription ?? "Unknown error")")
-                }
-            }.resume()
+        // Check if the user is blocked
+        if blockedUsers.contains(where: { $0.blockedUsername == username }) {
+            DispatchQueue.main.async {
+                print("User is blocked, alert should show now.")
+                self.alertMessage = "You can't add this user to your playlist because they are blocked!"
+                self.showAlert = true
+            }
+            return
         }
+
+        guard let url = URL(string: "http://127.0.0.1:8000/api/playlist/\(playlist.id)/users") else {
+            print("Invalid URL")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        let body: [String: [String]] = ["usernames": [username]]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                    print("User added to playlist successfully, alert should show now.")
+                    self.alertMessage = "User \(username) added to playlist successfully."
+                    self.showAlert = true
+                } else {
+                    print("Error adding user to playlist: \(error?.localizedDescription ?? "Unknown error"), alert should show now.")
+                    self.alertMessage = "Error adding user to playlist."
+                    self.showAlert = true
+                }
+            }
+        }.resume()
+    }
+
+
+    
+    func fetchBlockedUsers() {
+        guard let currentUser = userSession.username, !currentUser.isEmpty else {
+            print("Current user's username is not available")
+            return
+        }
+
+        let urlString = "http://127.0.0.1:8000/api/user/\(currentUser)/blocked"
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL")
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let data = data, let blockedUsers = try? JSONDecoder().decode([BlockedUser].self, from: data) {
+                DispatchQueue.main.async {
+                    self.blockedUsers = blockedUsers
+                }
+            } else {
+                print("Failed to fetch or decode blocked users")
+            }
+        }.resume()
+    }
+
 
     func fetchPlaylistSongs() {
         guard let url = URL(string: "http://127.0.0.1:8000/api/playlist/\(playlist.id)") else { return }
