@@ -187,6 +187,7 @@ struct PublicProfileView: View {
                 .padding(.bottom, 20)
                 .onAppear(perform: fetchUserData)
                 .onAppear {
+                    fetchProfileImage() // Fetch the profile image when the view appears
                     userSession.fetchAndUpdateUserData()
                     fetchUserData()
                     fetchPlaylists() // Ensure this is called
@@ -194,6 +195,9 @@ struct PublicProfileView: View {
                 .onChange(of: userSession.theme) { _ in
                     fetchUserData() // Fetch data when the theme changes
                     
+                }
+                .onChange(of: userSession.username) { _ in
+                    fetchProfileImage() // Fetch the profile image again if the username changes
                 }
                 .sheet(isPresented: $showingPlaylistDetail) {
                             if let selectedPlaylist = selectedPlaylist {
@@ -206,7 +210,36 @@ struct PublicProfileView: View {
             }
         }
         
-    
+    private func fetchProfileImage() {
+            guard let username = userSession.username,
+                  let url = URL(string: "http://127.0.0.1:8000/api/users/\(username)/getimg") else {
+                print("Invalid URL")
+                return
+            }
+
+            let task = URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    print("Error fetching image: \(error)")
+                    return
+                }
+
+                guard let httpResponse = response as? HTTPURLResponse,
+                      httpResponse.statusCode == 200,
+                      let mimeType = httpResponse.mimeType, mimeType.hasPrefix("image"),
+                      let data = data,
+                      let image = UIImage(data: data) else {
+                    print("Error: Invalid response from server or data")
+                    return
+                }
+
+                DispatchQueue.main.async {
+                    self.profileImage = image
+                }
+            }
+
+            task.resume()
+        }
+
     
     private func fetchUserData() {
         print("Fetching user data...")

@@ -12,23 +12,32 @@ struct RequestView: View {
     @State private var requesters: [String] = []
 
     var body: some View {
-        List(requesters, id: \.self) { requester in
-            if requester != userSession.username {
-                HStack {
-                    Text(requester)
-                    Spacer()
-                    Button(action: { acceptRequest(from: requester) }) {
-                        Image(systemName: "checkmark.circle")
-                    }
-                    .buttonStyle(BorderlessButtonStyle())
+        Group {
+                    if requesters.isEmpty {
+                        Text("You have no requests yet!")
+                            .font(.title) // Adjust the font size as needed
+                            .padding()
+                            .multilineTextAlignment(.center)
+                    } else {
+                        List(requesters, id: \.self) { requester in
+                            if requester != userSession.username {
+                                HStack {
+                                    Text(requester)
+                                    Spacer()
+                                    Button(action: { acceptRequest(from: requester) }) {
+                                        Image(systemName: "checkmark.circle")
+                                    }
+                                    .buttonStyle(BorderlessButtonStyle())
 
-                    Button(action: { declineRequest(from: requester) }) {
-                        Image(systemName: "xmark.circle")
+                                    Button(action: { declineRequest(from: requester) }) {
+                                        Image(systemName: "xmark.circle")
+                                    }
+                                    .buttonStyle(BorderlessButtonStyle())
+                                }
+                            }
+                        }
                     }
-                    .buttonStyle(BorderlessButtonStyle())
                 }
-            }
-        }
         .onAppear(perform: fetchFriendRequests)
     }
 
@@ -125,4 +134,3 @@ struct RequestView_Previews: PreviewProvider {
             // Add mock data or conditions as necessary
     }
 }
-

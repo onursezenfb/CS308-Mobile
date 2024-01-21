@@ -22,6 +22,8 @@ struct PlaylistDetailView: View {
         VStack {
             Text(playlist.playlist_name)
                 .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundColor(themeManager.themeColor)
                 .padding()
 
             TextField("Search songs...", text: $searchText)
@@ -37,13 +39,47 @@ struct PlaylistDetailView: View {
                 })
             
             Button("Add Users to This Playlist!") {
-                           showingAddUserSheet = true
-                       }
-                       .padding()
+                            showingAddUserSheet = true
+                        }
+                        .padding()
+                        .background(LinearGradient(gradient: Gradient(colors: [themeManager.themeColor, themeManager.themeColor.opacity(0.7)]), startPoint: .top, endPoint: .bottom))
+                        .cornerRadius(15)
+                        .foregroundColor(.white)
+                        .font(.headline)
+                        .shadow(radius: 5)
+                        .scaleEffect(showingAddUserSheet ? 1.1 : 1.0)
+                        .animation(.easeInOut(duration: 0.3))
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
                        .sheet(isPresented: $showingAddUserSheet
                       ) {
                            // Sheet content for adding users
                            VStack {
+                               Text("Add Collaborators to")
+                                   .font(.custom("Arial-BoldMT", size: 25))
+                                   .bold()
+                                   .foregroundColor(.clear)
+                                   .background(
+                                       LinearGradient(gradient: Gradient(colors: [Color.pink, Color.orange]), startPoint: .leading, endPoint: .trailing)
+                                   )
+                                   .mask(
+                                       Text("Add Collaborators to")
+                                           .font(.custom("Arial-BoldMT", size: 25))
+                                           .bold()
+                                   )
+                               Text("Your Playlist")
+                                   .font(.custom("Arial-BoldMT", size: 25))
+                                   .bold()
+                                   .foregroundColor(.clear)
+                                   .background(
+                                       LinearGradient(gradient: Gradient(colors: [Color.blue, Color.green]), startPoint: .leading, endPoint: .trailing)
+                                   )
+                                   .mask(
+                                       Text("Your Playlist")
+                                           .font(.custom("Arial-BoldMT", size: 25))
+                                           .bold()
+                                   )
+                               
                                TextField("Search users...", text: $userSearchText)
                                    .textFieldStyle(RoundedBorderTextFieldStyle())
                                    .padding()

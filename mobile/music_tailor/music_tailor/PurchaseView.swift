@@ -48,23 +48,30 @@ struct PurchaseView: View {
                 }
 
                 Button("Confirm Purchase") {
-                    if allFieldsCompleted() {
-                        purchaseMessage = "Purchase Complete!"
-                        subscription = subscriptionType
-                        rateLimit = rateLimitType
-                        userSession.updateSubscription(to: subscriptionType)
-                        userSession.updateRateLimit(to: rateLimit)
-                        updateUserInformation()
-                        userSession.fetchAndUpdateUserData() // Fetch the latest user data
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            self.presentationMode.wrappedValue.dismiss()
-                        }
-                    } else {
-                        purchaseMessage = "Please fill all the card fields!"
-                    }
-                }
-                .buttonStyle(PurchaseButtonStyle())
+                                    let validationResponse = validateInputs()
+                                    if validationResponse.isValid {
+                                        // Proceed with the purchase
+                                        // ...
+                                        purchaseMessage = "Purchase Complete!"
+                                        subscription = subscriptionType
+                                        rateLimit = rateLimitType
+                                        userSession.updateSubscription(to: subscriptionType)
+                                        userSession.updateRateLimit(to: rateLimit)
+                                        updateUserInformation()
+                                        userSession.fetchAndUpdateUserData() // Fetch the latest user data
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                            self.presentationMode.wrappedValue.dismiss()
+                                        }
+                                    } else {
+                                        self.alertMessage = validationResponse.message
+                                        self.showAlert = true
+                                    }
+                                }
+                                .buttonStyle(PurchaseButtonStyle())
             }
+            .alert(isPresented: $showAlert) {
+                        Alert(title: Text("Alert"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+                    }
 
             if let message = purchaseMessage {
                 Text(message)
@@ -77,8 +84,48 @@ struct PurchaseView: View {
                                 EmptyView()
                             }
                         }
+                
         }
     }
+    
+    private func validateInputs() -> (isValid: Bool, message: String) {
+            // Check if all fields are completed
+            if cardNumber.isEmpty || expiryDate.isEmpty || cvv.isEmpty || cardHolderName.isEmpty {
+                return (false, "Please fill all the areas!")
+            }
+
+            var errorMessages: [String] = []
+
+            // Validate card number
+            if cardNumber.count != 16 || !cardNumber.allSatisfy({ $0.isNumber }) {
+                errorMessages.append("Please enter a valid card number!")
+            }
+
+            // Validate expiry date
+            let expiryComponents = expiryDate.split(separator: "/").map(String.init)
+            if expiryComponents.count != 2 || !expiryComponents.allSatisfy({ $0.count == 2 && $0.allSatisfy({ $0.isNumber }) }) {
+                errorMessages.append("Please enter a valid expiration date!")
+            }
+
+            // Validate CVV
+            if cvv.count != 3 || !cvv.allSatisfy({ $0.isNumber }) {
+                errorMessages.append("Please enter a valid CVV!")
+            }
+
+            // Validate card holder name
+            if cardHolderName.contains(where: { $0.isNumber }) {
+                errorMessages.append("Please enter a valid card holder name!")
+            }
+
+            // Check if there's more than one error
+            if errorMessages.count > 1 {
+                return (false, "Please check your inputs again!")
+            } else if let errorMessage = errorMessages.first {
+                return (false, errorMessage)
+            }
+
+            return (true, "")
+        }
 
     private func allFieldsCompleted() -> Bool {
         return !cardNumber.isEmpty && !expiryDate.isEmpty && !cvv.isEmpty && !cardHolderName.isEmpty
