@@ -20,6 +20,7 @@ struct PlaylistDetailView: View {
     @State private var blockedUsers: [BlockedUser] = []
     @State private var showAlert = false
     @State private var alertMessage = ""
+    
 
 
 
@@ -30,19 +31,9 @@ struct PlaylistDetailView: View {
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundColor(themeManager.themeColor)
-                .padding()
+                .padding(10)
 
-            TextField("Search songs...", text: $searchText)
-                .autocapitalization(.none)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-                .onChange(of: searchText, perform: { value in
-                    if value.isEmpty {
-                        searchResults = []
-                    } else {
-                        searchSongs(query: value)
-                    }
-                })
+            
             
             Button("Add Users to This Playlist!") {
                             showingAddUserSheet = true
@@ -133,8 +124,20 @@ struct PlaylistDetailView: View {
                         }
                     }
                 }
+            }
 
-
+                TextField("Search songs...", text: $searchText)
+                    .autocapitalization(.none)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding()
+                    .onChange(of: searchText, perform: { value in
+                        if value.isEmpty {
+                            searchResults = []
+                        } else {
+                            searchSongs(query: value)
+                        }
+                    })
+            List{
                 Section(header: Text("Search Results")) {
                     ForEach(searchResults, id: \.song_id) { song in
                         HStack {

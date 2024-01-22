@@ -2783,11 +2783,6 @@ struct ContentView: View {
                             ChangeThemeView()
                         }
                         
-                        Button("Limit Your Activity") {
-                            // Action for Limit Your Activity
-                        }
-                        
-                        .buttonStyle(SettingsButtonStyle())
                         
                         HStack (spacing: -35){
                             Spacer(minLength: 350)

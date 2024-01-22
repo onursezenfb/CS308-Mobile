@@ -36,7 +36,7 @@ struct PurchaseView: View {
 
             Spacer()
             
-            CreditCardView(cardNumber: $cardNumber, expiryDate: $expiryDate, cardHolderName: $cardHolderName)
+            CreditCardView(cardNumber: $cardNumber, expiryDate: $expiryDate, CVV: $cvv, cardHolderName: $cardHolderName)
                 .padding()
 
             Form {
@@ -45,6 +45,8 @@ struct PurchaseView: View {
                     TextField("Expiry Date (MM/YY)", text: $expiryDate)
                     TextField("CVV", text: $cvv)
                     TextField("Card Holder Name", text: $cardHolderName)
+                        .autocapitalization(.none)  // Disable automatic capitalization
+                        .disableAutocorrection(true) 
                 }
 
                 Button("Confirm Purchase") {
@@ -189,6 +191,7 @@ struct PurchaseUser: Codable {
 struct CreditCardView: View {
     @Binding var cardNumber: String
     @Binding var expiryDate: String
+    @Binding var CVV: String
     @Binding var cardHolderName: String
     
 
@@ -197,10 +200,20 @@ struct CreditCardView: View {
             // Card Number
             
             HStack {
-                Text("Card Number:")
-                Spacer()
+                Text("Card Number: ")
                 Text(formatCardNumber(number: cardNumber))
+                Spacer()
             }
+            Spacer().frame(height: 10)
+
+
+            // CVV
+            HStack {
+                Text("CVV:")
+                Spacer()
+                Text(CVV)
+            }
+            Spacer().frame(height: 10)
 
             // Expiry Date
             HStack {
@@ -208,6 +221,7 @@ struct CreditCardView: View {
                 Spacer()
                 Text(expiryDate)
             }
+            Spacer().frame(height: 10)
 
             // Card Holder's Name
             HStack {
@@ -216,8 +230,8 @@ struct CreditCardView: View {
                 Text(cardHolderName.uppercased())
             }
         }
-        .padding()
-        .frame(width: 300, height: 180)
+        .padding(9)
+        .frame(width: 330, height: 190)
         .background(LinearGradient(gradient: Gradient(colors: [Color.blue, Color.purple]), startPoint: .top, endPoint: .bottom))
         .cornerRadius(15)
         .foregroundColor(.white)

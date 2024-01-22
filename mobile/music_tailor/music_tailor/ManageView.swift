@@ -198,7 +198,7 @@ struct ManageView: View {
             return
         }
 
-        let urlString = "http://127.0.0.1:8000/api/unfriend-mobile/\(friend.username)/\(currentUser)"
+        let urlString = "http://127.0.0.1:8000/api/unfriend-mobile/\(currentUser)/\(friend.username)"
         guard let url = URL(string: urlString) else {
             print("Invalid URL")
             return

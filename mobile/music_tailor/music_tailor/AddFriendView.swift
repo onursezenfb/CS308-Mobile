@@ -34,7 +34,6 @@ struct FriendRequest: Decodable {
 
 
 struct AddFriendView: View {
-    @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var userSession: UserSession // Assuming this holds the logged-in user's info
     @EnvironmentObject var themeManager: ThemeManager
     @State private var searchText = ""
@@ -57,6 +56,9 @@ struct AddFriendView: View {
                         .onChange(of: searchText) { newValue in
                             performSearch(with: newValue)
                         }
+            
+
+
                         
                     if showingOwnNameAlert {
                         Text("You cannot search for your own username.").foregroundColor(.red).padding()
@@ -81,29 +83,36 @@ struct AddFriendView: View {
             }
 
     private func UserRow(user: User) -> some View {
-        HStack {
-            Text(user.username)
-            Spacer()
-            if user.username != userSession.username {
-                if !blockedUsernames.contains(user.username) {
-                    if !requestSent[user.username, default: false] {
-                        Button("Follow Friend") {
-                            sendFriendRequest(to: user)
+        VStack {
+            HStack {
+                Text(user.username)
+                Spacer()
+                if user.username != userSession.username {
+                    if !blockedUsernames.contains(user.username) {
+                        if !requestSent[user.username, default: false] {
+                            Button("Follow Friend") {
+                                sendFriendRequest(to: user)
+                            }
+                            .foregroundColor(.blue)
+                            .disabled(blockedUsernames.contains(user.username)) // Disable if user is blocked
+                        } else {
+                            Text("Request Sent").foregroundColor(.gray)
                         }
-                        .foregroundColor(.blue)
-                        .disabled(blockedUsernames.contains(user.username)) // Disable if user is blocked
+                        Spacer().frame(width: 20)
+                        Button("Block") {
+                            blockUser(user)
+                        }
+                        .foregroundColor(.red)
                     } else {
-                        Text("Request Sent").foregroundColor(.gray)
+                        Text("Blocked").foregroundColor(.gray)
                     }
-                    Button("Block") {
-                        blockUser(user)
-                    }
-                    .foregroundColor(.red)
-                } else {
-                    Text("Blocked").foregroundColor(.gray)
                 }
             }
+            .padding(.vertical, 2)
+            
+            Divider()
         }
+        
     }
 
     
@@ -373,11 +382,12 @@ struct AddFriendView: View {
             }
         }
     }
-    
-    // Define this struct for preview in Xcode
-    struct AddFriendView_Previews: PreviewProvider {
-        static var previews: some View {
-            AddFriendView()
-        }
+}
+
+struct AddFriendView_Previews: PreviewProvider {
+    static var previews: some View {
+        AddFriendView()
+            .environmentObject(UserSession.mock)
+            .environmentObject(ThemeManager()) // Add ThemeManager as an environment object
     }
 }

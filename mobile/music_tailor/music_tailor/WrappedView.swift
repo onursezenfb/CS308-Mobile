@@ -5,11 +5,12 @@ struct CardView: View {
     var title: String
     var names: [String]
     var themeColor: Color
+    var vert: Int
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             RoundedRectangle(cornerRadius: 12)
-                .frame(height: 150)  // Adjusted height
+                .frame(height: CGFloat(vert))  // Adjusted height
                 .foregroundColor(.white)
                 .overlay(
                     VStack(alignment: .leading, spacing: 4) {
@@ -19,16 +20,21 @@ struct CardView: View {
                             .padding(.bottom, 4)
                         
                         RoundedRectangle(cornerRadius: 12)
-                            .frame(height: 110)  // Adjusted height
+                            .frame(height: CGFloat(vert) - 50)  // Adjusted height
                             .foregroundColor(themeColor.opacity(0.5))
                             .overlay(
                                 VStack(alignment: .leading, spacing: 4) {
-                                    ForEach(names, id: \.self) { name in
-                                        Text(name)
-                                            .font(.subheadline)  // Adjusted font size
+                                    ForEach(Array(names.enumerated()), id: \.element) { index, name in
+                                        HStack {
+                                            Text("\(index + 1)-")
+                                                .font(.subheadline)
+                                            Text(name)
+                                                .font(.subheadline)
+                                            Spacer()
+                                        }
                                     }
                                 }
-                                    .padding()
+                                .padding()
                             )
                     }
                     .padding()
@@ -59,24 +65,32 @@ struct WrappedView: View {
         }
         .overlay(
             VStack {
-                // Display Top 5 Songs
-                if !top5Songs.isEmpty {
-                    CardView(title: "Top 5 Songs", names: top5Songs.map(\.name), themeColor: themeManager.themeColor)
-                }
+                Text("Music Tailor Wrapped")
+                    .font(Font.system(size: 36, design: .rounded))
+                    .bold()
+                    .foregroundColor(.white)
+                    .frame(width: 350, height: 50, alignment: .leading)
+                    .padding(.top, 40)
+                    .padding(.bottom, 10)
 
                 // Display Song of the Year
                 if let songOfYear = songOfYear {
-                    CardView(title: "Song of the Year", names: [songOfYear.name], themeColor: themeManager.themeColor)
+                    CardView(title: "Song of the Year", names: [songOfYear.name], themeColor: themeManager.themeColor, vert: 100)
+                }
+                
+                // Display Top 5 Songs
+                if !top5Songs.isEmpty {
+                    CardView(title: "Top 5 Songs", names: top5Songs.map(\.name), themeColor: themeManager.themeColor, vert: 170)
                 }
 
                 // Display Top 5 Albums
                 if !top5Albums.isEmpty {
-                    CardView(title: "Top 5 Albums", names: top5Albums.map(\.name), themeColor: themeManager.themeColor)
+                    CardView(title: "Top 5 Albums", names: top5Albums.map(\.name), themeColor: themeManager.themeColor, vert: 170)
                 }
 
                 // Display Top 5 Genres
                 if !top5Genres.isEmpty {
-                    CardView(title: "Top 5 Genres", names: top5Genres, themeColor: themeManager.themeColor)
+                    CardView(title: "Top 5 Genres", names: top5Genres, themeColor: themeManager.themeColor, vert: 170)
                 }
             }
             .padding()
@@ -100,7 +114,6 @@ struct WrappedView: View {
                         let decodedData = try JSONDecoder().decode([Song].self, from: data)
                         DispatchQueue.main.async {
                             self.top5Songs = decodedData
-                            print("Top 5 Songs:", self.top5Songs)
                         }
                     } catch {
                         print("Error decoding top 5 songs:", error)
@@ -186,7 +199,6 @@ struct WrappedView: View {
                         let decodedData = try JSONDecoder().decode([String].self, from: data)
                         DispatchQueue.main.async {
                             self.top5Genres = decodedData
-                            print("Top 5 Genres:", self.top5Genres)
                         }
                     } catch {
                         print("Error decoding top 5 genres:", error)

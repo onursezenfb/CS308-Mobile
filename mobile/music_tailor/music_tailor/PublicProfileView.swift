@@ -25,6 +25,7 @@ struct PublicProfileView: View {
         @State private var showingCreatePlaylistSheet = false
         @State private var newPlaylistName = ""
         @State private var showingPlaylistDetail = false
+        @State private var navigateToWrapped = false
         @State private var selectedPlaylist: Playlist?
 
         
@@ -39,7 +40,7 @@ struct PublicProfileView: View {
                 VStack {
                     VStack(alignment: .leading, spacing: 0) {
                         HStack {
-                            Text("Your Public")
+                            Text("\(userSession.name ?? "")'s Public")
                                 .font(.largeTitle)
                                 .bold()
                                 .foregroundColor(.black)
@@ -67,6 +68,7 @@ struct PublicProfileView: View {
                     .padding(.bottom, 10)
                     .background(themeManager.themeColor.opacity(0.15))
                     
+                    Spacer().frame(height: 20)
                     if let image = selectedImage ?? profileImage {
                         Image(uiImage: image)
                             .resizable()
@@ -97,28 +99,49 @@ struct PublicProfileView: View {
                     Text("@\(userSession.username ?? "")")
                         .foregroundColor(themeManager.themeColor)
                     
-                   
+                   Divider()
                     ScrollView {
                         // Editable user information fields
                         Group {
-                            HStack {
-                                Text("Your Stories")
-                                    .bold()
-                                Spacer()
+                            NavigationLink(
+                                destination: WrappedView(),
+                                isActive: $navigateToWrapped
+                            ) {
+                                EmptyView()
                             }
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, -10)
+                            
+                            // Button that sets navigateToPremium to true
+                            Button(action: {
+                                navigateToWrapped = true
+                            }) {
+                                Text("See Wrapped of \(userSession.name ?? "")")
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .background(themeManager.themeColor)
+                                    .cornerRadius(10)
+                            }
+                            .padding(.top, -20)
+
+                            Divider()
+                            
                             HStack {
-                                Text("Your Playlists")
+                                Text("\(userSession.name ?? "")'s Playlists")
                                     .bold()
+
                                 Spacer()
                                 
                                 Button(action: {
                                                         showingCreatePlaylistSheet = true
                                                     }) {
-                                                        Image(systemName: "plus.circle.fill")
-                                                            .foregroundColor(themeManager.themeColor)
-                                                            .padding()
+                                                        HStack{
+                                                            Text("Create Playlist")
+                                                                .padding(.trailing, -18)
+                                                                .foregroundColor(themeManager.themeColor)
+                                                            Image(systemName: "plus.circle.fill")
+                                                                .foregroundColor(themeManager.themeColor)
+                                                                .padding()
+                                                        }
+                                                        
                                                     }
                                                     .sheet(isPresented: $showingCreatePlaylistSheet) {
                                                         Text("Enter Playlist Name")
@@ -148,8 +171,9 @@ struct PublicProfileView: View {
                                 
                             }
                             .padding(.horizontal, 20)
-                            .padding(.vertical, -10)
-                            .padding(.bottom, 10)
+                            .padding(.top, -30)
+                            .padding(.bottom, -40)
+
                             
                             // Inside PublicProfileView
 
@@ -178,6 +202,7 @@ struct PublicProfileView: View {
                                     }
                                 }
                             }
+                            .padding(.top, -20)
                                             .padding(.horizontal)
                                         }
                         .padding()
